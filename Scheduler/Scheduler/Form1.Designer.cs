@@ -123,6 +123,7 @@ namespace Scheduler
             this.dtEnd.Name = "dtEnd";
             this.dtEnd.Size = new System.Drawing.Size(154, 20);
             this.dtEnd.TabIndex = 11;
+            this.dtEnd.ValueChanged += new System.EventHandler(this.dtEnd_ValueChanged);
             // 
             // dtStart
             // 
@@ -182,6 +183,7 @@ namespace Scheduler
             this.dtDateTime.Name = "dtDateTime";
             this.dtDateTime.Size = new System.Drawing.Size(419, 20);
             this.dtDateTime.TabIndex = 4;
+            this.dtDateTime.ValueChanged += new System.EventHandler(this.dtDateTime_ValueChanged);
             // 
             // cmbType
             // 
