@@ -11,7 +11,7 @@ namespace TestScheduler
         [InlineData(SchedulerType.Once, 2, FrequencyType.Daily, "01/01/2020", "01/01/2020", "01/02/2019")]
         [InlineData(SchedulerType.Once, 2, FrequencyType.Daily, "31/12/9999", "01/01/2020", "01/01/2021")]
         [InlineData(SchedulerType.Once, 2, FrequencyType.Daily, "01/01/2020", "31/12/9999", "01/01/2021")]
-        public void SchedulerConfigurationValidation(SchedulerType type, int interval, FrequencyType frequency, string dateTimeStr, string startDateStr, string endDateStr)
+        public void SchedulerBasicConfigurationValidation(SchedulerType type, int interval, FrequencyType frequency, string dateTimeStr, string startDateStr, string endDateStr)
         {
             DateTime dateTime = DateTime.ParseExact(dateTimeStr, "dd/MM/yyyy", null);
             DateTime startDate = DateTime.ParseExact(startDateStr, "dd/MM/yyyy", null);
@@ -29,6 +29,166 @@ namespace TestScheduler
 
             Assert.Throws<ConfigurationException>(() => Validator.ValidateBasicConfiguration(configuration));
         }
+
+        [Theory]
+        [InlineData(FrequencyType.Daily, 1,"01/01/2020 04:15:00", "01/01/2020", "01/02/2020")]
+        public void ScheduleDailyConfigurationNullValidation(FrequencyType frequency, int interval, string currentDateStr, string startDateStr, string endDateStr)
+        {
+            DateTime startDate = DateTime.ParseExact(startDateStr, "d", null);
+            DateTime currentDate = DateTime.ParseExact(currentDateStr, "dd/MM/yyyy hh:mm:ss", null);
+
+            DateTime? endDate = null;
+            if (string.IsNullOrEmpty(endDateStr) == false)
+            {
+                endDate = DateTime.ParseExact(endDateStr, "d", null);
+            }
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration(
+                   SchedulerType.Recurring,
+                   frequency,
+                   null,
+                   interval,
+                   null,
+                   null,
+                   startDate,
+                   endDate);
+            Schedule sched = new Schedule(configuration);
+
+
+            Assert.Throws<ConfigurationException>(() => Validator.ValidateDailyConfiguration(configuration));
+        }
+
+        [Theory]
+        [InlineData(FrequencyType.Weekly, 1, "01/01/2020 04:15:00", "01/01/2020", "01/02/2020")]
+        public void ScheduleWeeklyConfigurationNullValidation(FrequencyType frequency, int interval, string currentDateStr, string startDateStr, string endDateStr)
+        {
+            DateTime startDate = DateTime.ParseExact(startDateStr, "d", null);
+            DateTime currentDate = DateTime.ParseExact(currentDateStr, "dd/MM/yyyy hh:mm:ss", null);
+
+            DateTime? endDate = null;
+            if (string.IsNullOrEmpty(endDateStr) == false)
+            {
+                endDate = DateTime.ParseExact(endDateStr, "d", null);
+            }
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration(
+                   SchedulerType.Recurring,
+                   frequency,
+                   null,
+                   interval,
+                   null,
+                   null,
+                   startDate,
+                   endDate);
+            Schedule sched = new Schedule(configuration);
+
+
+            Assert.Throws<ConfigurationException>(() => Validator.ValidateDailyConfiguration(configuration));
+        }
+
+        [Theory]
+        [InlineData(FrequencyType.Weekly, 2, 0, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday },
+        "02:00:00", "00:00:00", "12:00:00", "01/01/2019 00:00:00", "01/01/2020", "01/02/2020")]
+        [InlineData(FrequencyType.Weekly, 2, -1, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday },
+        "02:00:00", "00:00:00", "12:00:00", "01/01/2019 00:00:00", "01/01/2020", "01/02/2020")]
+        [InlineData(FrequencyType.Weekly, 2, 2, new DayOfWeek[] {},
+        "02:00:00", "00:00:00", "12:00:00", "01/01/2019 00:00:00", "01/01/2020", "01/02/2020")]
+        [InlineData(FrequencyType.Weekly, 2, 2, null,
+        "02:00:00", "00:00:00", "12:00:00", "01/01/2019 00:00:00", "01/01/2020", "01/02/2020")]
+
+        public void ScheduleWeeklyConfigurationValidation(FrequencyType frequency, int interval, int occurrenceWeekly,
+            DayOfWeek[] daysOfWeek, string occurrence, string startTimeStr,
+            string endTimeStr, string currentDateStr, string startDateStr, string endDateStr)
+        {
+            DateTime startDate = DateTime.ParseExact(startDateStr, "d", null);
+            DateTime currentDate = DateTime.ParseExact(currentDateStr, "dd/MM/yyyy hh:mm:ss", null);
+            TimeSpan timespanOccurrence = TimeSpan.ParseExact(occurrence, @"hh\:mm\:ss", null);
+            TimeSpan startTime = TimeSpan.ParseExact(startTimeStr, @"hh\:mm\:ss", null);
+            TimeSpan endTime = TimeSpan.ParseExact(endTimeStr, @"hh\:mm\:ss", null);
+
+            DateTime? endDate = null;
+            if (string.IsNullOrEmpty(endDateStr) == false)
+            {
+                endDate = DateTime.ParseExact(endDateStr, "d", null);
+            }
+
+            WeeklyFrequency weeklyFreq = new WeeklyFrequency
+            {
+                DaysOfWeek = daysOfWeek,
+                Occurrence = occurrenceWeekly
+            };
+
+            DailyFrequency dailyFreq = new DailyFrequency
+            {
+                Occurrence = timespanOccurrence,
+                IsRecurring = true,
+                StartTime = startTime,
+                EndTime = endTime
+            };
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration(
+                   SchedulerType.Recurring,
+                   frequency,
+                   null,
+                   interval,
+                   dailyFreq,
+                   weeklyFreq,
+                   startDate,
+                   endDate);
+            Schedule sched = new Schedule(configuration);
+
+            Assert.Throws<ConfigurationException>(() => Validator.ValidateWeeklyConfiguration(configuration));
+        }
+
+
+
+        [Theory]
+        [InlineData(FrequencyType.Daily, 1, "02:00:00", "04:00:00", "", "01/01/2020 04:15:00", "01/01/2020", "01/02/2020")]
+        [InlineData(FrequencyType.Daily, 1, "02:00:00", "", "08:00:00", "01/01/2020 08:00:00", "01/01/2020", "01/02/2020")]
+        public void ScheduleDailyConfigurationValidation(FrequencyType frequency, int interval, string occurrence, string startTimeStr, string endTimeStr, string currentDateStr, string startDateStr, string endDateStr)
+        {
+            DateTime startDate = DateTime.ParseExact(startDateStr, "d", null);
+            DateTime currentDate = DateTime.ParseExact(currentDateStr, "dd/MM/yyyy hh:mm:ss", null);
+            TimeSpan timespanOccurrence = TimeSpan.ParseExact(occurrence, @"hh\:mm\:ss", null);
+            TimeSpan? startTime = null;
+            if (string.IsNullOrEmpty(startTimeStr) == false)
+            {
+                startTime = TimeSpan.ParseExact(startTimeStr, @"hh\:mm\:ss", null);
+            }
+            TimeSpan? endTime = null;
+            if (string.IsNullOrEmpty(endTimeStr) == false)
+            {
+                endTime = TimeSpan.ParseExact(endTimeStr, @"hh\:mm\:ss", null);
+            }
+
+            DateTime? endDate = null;
+            if (string.IsNullOrEmpty(endDateStr) == false)
+            {
+                endDate = DateTime.ParseExact(endDateStr, "d", null);
+            }
+
+            DailyFrequency dailyFreq = new DailyFrequency
+            {
+                Occurrence = timespanOccurrence,
+                IsRecurring = true,
+                StartTime = startTime,
+                EndTime = endTime
+            };
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration(
+                   SchedulerType.Recurring,
+                   frequency,
+                   null,
+                   interval,
+                   dailyFreq,
+                   null,
+                   startDate,
+                   endDate);
+            Schedule sched = new Schedule(configuration);
+
+            Assert.Throws<ConfigurationException>(() => Validator.ValidateDailyConfiguration(configuration));
+        }
+
 
         [Theory]
         [InlineData("08/01/2020 14:00", "01/01/2020", "04/01/2020", "08/01/2020 14:00")]

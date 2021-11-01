@@ -17,8 +17,8 @@ namespace Scheduler
 
         public TimeSpan Occurrence { get; set; }
         public bool IsRecurring { get; set; }
-        public TimeSpan StartTime { get; set; }
-        public TimeSpan EndTime { get; set; }
+        public TimeSpan? StartTime { get; set; }
+        public TimeSpan? EndTime { get; set; }
         public TimeSpan[] DailyExecutionTimes
         {
             get
@@ -28,7 +28,7 @@ namespace Scheduler
                     List<TimeSpan> executionTimesAux = new List<TimeSpan>();
                     for (var ts = StartTime; ts <= EndTime; ts += Occurrence)
                     {
-                        executionTimesAux.Add(ts);
+                        executionTimesAux.Add(ts.Value);
                     }
                     dailyExecutionTimes = executionTimesAux.ToArray();
                 }
@@ -59,7 +59,7 @@ namespace Scheduler
                             timePart = Occurrence.Minutes;
                         }
                         description = string.Format(OCCURRENCE_STR_RECURRING, timePart, timeStr,
-                            StartTime.ToString(@"hh\:mm\:ss"), EndTime.ToString(@"hh\:mm\:ss"));
+                            StartTime.Value.ToString(@"hh\:mm\:ss"), EndTime.Value.ToString(@"hh\:mm\:ss"));
                     }
                 }
                 return description;

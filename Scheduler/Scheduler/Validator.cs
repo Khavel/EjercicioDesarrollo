@@ -43,11 +43,6 @@ namespace Scheduler
                 throw new ConfigurationException("No daily frequency was specified");
             }
 
-            if(config.DailyFrequency.Occurrence == null)
-            {
-                throw new ConfigurationException("No occurrence period was specified in the daily frequency");
-            }
-
             if (config.DailyFrequency.IsRecurring == true)
             {
                 if(config.DailyFrequency.StartTime == null)
@@ -74,16 +69,9 @@ namespace Scheduler
                 throw new ConfigurationException("Incorrect weekly frequency");
             }
 
-            if (config.DailyFrequency.IsRecurring == true)
+            if(config.WeeklyFrequency.DaysOfWeek == null || config.WeeklyFrequency.DaysOfWeek.Length == 0)
             {
-                if (config.DailyFrequency.StartTime == null)
-                {
-                    throw new ConfigurationException("Daily configuration set to recurring, but no start time specified");
-                }
-                if (config.DailyFrequency.EndTime == null)
-                {
-                    throw new ConfigurationException("Daily configuration set to recurring, but no end time specified");
-                }
+                throw new ConfigurationException("No valid day of the week was indicated");
             }
         }
     }
