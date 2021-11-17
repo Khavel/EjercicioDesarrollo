@@ -8,26 +8,16 @@ namespace Scheduler
 {
     public class SchedulerConfiguration
     {
-        public SchedulerConfiguration(SchedulerType type, FrequencyType frequency, DateTime? dateTimeOnce, int interval, DailyFrequency dailyFrequency, WeeklyFrequency weeklyFrequency, DateTime startDate, DateTime? endDate)
-        {
-            this.Type = type;
-            this.DateTimeOnce = dateTimeOnce;
-            this.Frequency = frequency;
-            this.Interval = interval;
-            this.DailyFrequency = dailyFrequency;
-            this.StartDate = startDate;
-            this.EndDate = endDate;
-            this.WeeklyFrequency = weeklyFrequency;
-        }
+        public SchedulerConfiguration() { }
         #region Properties
-        public SchedulerType Type { get; }
-        public DateTime? DateTimeOnce { get; }
-        public FrequencyType Frequency { get; }
-        public int Interval { get; }
-        public DailyFrequency DailyFrequency { get; }
-        public WeeklyFrequency WeeklyFrequency { get; }
-        public DateTime StartDate { get; }
-        public DateTime? EndDate { get; }
+        public SchedulerType Type { get; set; }
+        public DateTime? DateTimeOnce { get; set; }
+        public FrequencyType Frequency { get; set; }
+        public int Interval { get; set; }
+        public DailyFrequency DailyFrequency { get; set; }
+        public WeeklyFrequency WeeklyFrequency { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
         #endregion
     }
 

@@ -3,45 +3,70 @@ using System.Linq;
 
 namespace Scheduler
 {
-    public class Schedule
+    public static class Schedule
     {
         private const string ONCE_OCCURRENCE = "Occurs once. Schedule will be used on {0} at {1} starting on {2}";
         private const string DATE_OVER_END = "Will not occur. Schedule will end on {0}";
 
-        private SchedulerConfiguration configuration;
-        public Schedule(SchedulerConfiguration configuration)
+        public static DateTime? GetNextExecutionTime(DateTime currentDate, SchedulerConfiguration configuration)
         {
-            this.configuration = configuration;
+            if (configuration.Type == SchedulerType.Once)
+            {
+                return GetNextExecutionTimeOnce(currentDate, configuration);
+            }
+            return GetNextExecutionTimeRecurring(currentDate, configuration);
         }
 
-        public DateTime? GetNextExecutionTime(DateTime currentDate)
+        private static DateTime? GetNextExecutionTimeRecurring(DateTime currentDate, SchedulerConfiguration configuration)
         {
-            #region Execution time for Once
-            if (this.configuration.Type == SchedulerType.Once)
+            if (configuration.StartDate.Date == DateTime.MaxValue.Date)
             {
-                if (currentDate > configuration.DateTimeOnce)
-                {
-                    return currentDate;
-                }
-                else
-                {
-                    return configuration.DateTimeOnce.Value;
-                }
+                throw new ConfigurationException("The specified start date is not valid");
             }
-            #endregion
-            #region Execution time for Recurring
-            DateTime initialDate = currentDate;
+            if (configuration.EndDate?.Date == DateTime.MaxValue.Date)
+            {
+                throw new ConfigurationException("The specified end date is not valid");
+            }
+            if (configuration.EndDate.HasValue && configuration.StartDate >= configuration.EndDate)
+            {
+                throw new ConfigurationException("The end date must come after the start date");
+            }
+            if (configuration.Interval < 0)
+            {
+                throw new ConfigurationException("The specified interval is not valid");
+            }
+            if (configuration.Type == SchedulerType.Recurring && configuration.DailyFrequency == null)
+            {
+                throw new ConfigurationException("No daily frequency was specified");
+            }
+            if (configuration.Type == SchedulerType.Recurring && configuration.Frequency == FrequencyType.Weekly &&
+                configuration.WeeklyFrequency == null)
+            {
+                throw new ConfigurationException("No weekly frequency was specified");
+            }
+
+            DateTime dateTimeAux = currentDate;
 
             if (currentDate.Date < configuration.StartDate.Date)
             {
                 DateTime startDateCurrentTime = new DateTime(configuration.StartDate.Year, configuration.StartDate.Month, configuration.StartDate.Day);
                 startDateCurrentTime += currentDate.TimeOfDay;
-                return startDateCurrentTime;
+                dateTimeAux = startDateCurrentTime;
+            }
+
+            switch (configuration.Frequency)
+            {
+                case FrequencyType.Daily:
+                    dateTimeAux = getNextDateDaily(dateTimeAux, configuration);
+                    break;
+                case FrequencyType.Weekly:
+                    dateTimeAux = getNextDateWeekly(dateTimeAux, configuration);
+                    break;
             }
 
             //This part determines the next date of execution
             DateTime returnDate;
-            returnDate = addInterval(initialDate);
+            returnDate = addInterval(dateTimeAux, configuration);
             if (returnDate > configuration.EndDate)
             {
                 return null;
@@ -49,7 +74,7 @@ namespace Scheduler
             else
             {
                 //This part determines the next time of execution, for daily frequency configurations
-                if (this.configuration.DailyFrequency == null)
+                if (configuration.DailyFrequency == null)
                 {
                     return returnDate;
                 }
@@ -64,7 +89,7 @@ namespace Scheduler
                         //If the current time is higher than the end time, move to next date of execution
                         if (returnDate.TimeOfDay >= configuration.DailyFrequency?.EndTime)
                         {
-                            return GetNextExecutionTime(initialDate.Date);
+                            return GetNextExecutionTime(dateTimeAux.Date, configuration);
                         }
                         else if (returnDate.TimeOfDay <= configuration.DailyFrequency?.StartTime)
                         {
@@ -72,21 +97,89 @@ namespace Scheduler
                         }
                         else
                         {
-                            return getNextTimeDaily(returnDate);
+                            return getNextTimeDaily(returnDate, configuration);
                         }
                     }
                 }
             }
-            #endregion
         }
 
-        private DateTime getNextTimeDaily(DateTime theDate)
+        private static DateTime getNextDateDaily(DateTime initialDate, SchedulerConfiguration configuration)
         {
+            if(initialDate.Date == configuration.StartDate.Date)
+            {
+                return initialDate;
+            }
+            else
+            {
+                return initialDate.AddDays(configuration.Interval);
+            }
+
+        }
+
+        public static DateTime?[] GetMultipleNextExecutionTimes(DateTime currentDate, SchedulerConfiguration configuration, int numberOfTimes)
+        {
+            DateTime?[] executionTimes = new DateTime?[numberOfTimes];
+            if(numberOfTimes == 0)
+            {
+                return executionTimes;
+            }
+            executionTimes[0] = GetNextExecutionTime(currentDate, configuration);
+            if(numberOfTimes == 1)
+            {
+                return executionTimes;
+            }
+            for (int i = 1; i < numberOfTimes; i++)
+            {
+                executionTimes[i] = GetNextExecutionTime(executionTimes[i-1].Value, configuration);
+            }
+            return executionTimes;
+        }
+
+        private static DateTime GetNextExecutionTimeOnce(DateTime currentDate, SchedulerConfiguration configuration)
+        {
+            if (configuration.DateTimeOnce.HasValue == false || configuration.DateTimeOnce?.Date == DateTime.MaxValue.Date)
+            {
+                throw new ConfigurationException("The specified date is not valid");
+            }
+
+            if (currentDate > configuration.DateTimeOnce)
+            {
+                return currentDate;
+            }
+            else
+            {
+                return configuration.DateTimeOnce.Value;
+            }
+        }
+
+        private static DateTime? getNextTimeDaily(DateTime theDate, SchedulerConfiguration configuration)
+        {
+            if (configuration.DailyFrequency?.IsRecurring == false)
+            {
+                return theDate.Date + configuration.DailyFrequency?.Occurrence;
+            }
             return theDate.Date + configuration.DailyFrequency.DailyExecutionTimes.First(T => T > theDate.TimeOfDay);
         }
 
-        private DateTime getNextDateWeekly(DateTime theDate)
+        private static DateTime getNextDateWeekly(DateTime theDate, SchedulerConfiguration configuration)
         {
+            
+            if (configuration.WeeklyFrequency.Occurrence <= 0)
+            {
+                throw new ConfigurationException("Incorrect weekly frequency");
+            }
+
+            if (configuration.WeeklyFrequency.DaysOfWeek == null || configuration.WeeklyFrequency.DaysOfWeek.Length == 0)
+            {
+                throw new ConfigurationException("No valid day of the week was indicated");
+            }
+
+            if (configuration.WeeklyFrequency.DaysOfWeek.Any(T => T == theDate.DayOfWeek))
+            {
+                return theDate;
+            }
+
             DateTime theDateAux = theDate;
             while (theDateAux.DayOfWeek != DayOfWeek.Sunday)
             {
@@ -96,16 +189,28 @@ namespace Scheduler
                     return theDateAux;
                 }
             }
-            theDateAux = theDateAux.AddDays(((configuration.WeeklyFrequency.Occurrence-1)*7)+1);
+            theDateAux = theDateAux.AddDays(((configuration.WeeklyFrequency.Occurrence - 1) * 7) + 1);
             if (configuration.WeeklyFrequency.DaysOfWeek.Any(T => T == theDateAux.DayOfWeek))
             {
                 return theDateAux;
             }
-            return getNextDateWeekly(theDateAux);
+            return getNextDateWeekly(theDateAux, configuration);
         }
 
-        private DateTime addInterval(DateTime currentDate)
+        private static DateTime addInterval(DateTime currentDate, SchedulerConfiguration configuration)
         {
+            if (configuration.DailyFrequency.IsRecurring == true)
+            {
+                if (configuration.DailyFrequency.StartTime == null)
+                {
+                    throw new ConfigurationException("Daily configuration set to recurring, but no start time specified");
+                }
+                if (configuration.DailyFrequency.EndTime == null)
+                {
+                    throw new ConfigurationException("Daily configuration set to recurring, but no end time specified");
+                }
+            }
+
             DateTime returnDate;
             switch (configuration.Frequency)
             {
@@ -117,7 +222,7 @@ namespace Scheduler
                     {
                         returnDate = currentDate;
                     }
-                    returnDate = getNextDateWeekly(currentDate);
+                    returnDate = getNextDateWeekly(currentDate, configuration);
                     break;
                 default:
                     throw new ScheduleException("No valid frequency was specified");
@@ -125,9 +230,9 @@ namespace Scheduler
             return returnDate;
         }
 
-        public string GetDescription(DateTime currentDate)
+        public static string GetDescription(DateTime currentDate, SchedulerConfiguration configuration)
         {
-            DateTime? nextExecution = GetNextExecutionTime(currentDate);
+            DateTime? nextExecution = GetNextExecutionTime(currentDate, configuration);
 
             if (nextExecution.HasValue == false)
             {
