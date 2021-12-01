@@ -8,7 +8,7 @@ namespace TestScheduler
     public class SchedulerTest
     {
         [Fact]
-        public void SchedulerDateTimeOnceNullValidation()
+        public void Schedule_DateTimeOnceNullValidation()
         {
             SchedulerConfiguration configuration = new SchedulerConfiguration();
             configuration.Type = SchedulerType.Once;
@@ -18,19 +18,19 @@ namespace TestScheduler
         }
 
         [Fact]
-        public void SchedulerDateTimeIsMaxValueNullValidation()
+        public void Schedule_DateTimeIsMaxValueValidation()
         {
             SchedulerConfiguration configuration = new SchedulerConfiguration();
             configuration.Type = SchedulerType.Once;
             configuration.DateTimeOnce = DateTime.MaxValue;
 
-            Assert.Throws<ConfigurationException>(() => Schedule.GetNextExecutionTime(DateTime.Today,configuration));
+            Assert.Throws<ConfigurationException>(() => Schedule.GetNextExecutionTime(DateTime.Today, configuration));
         }
 
         [Fact]
-        public void ScheduleNextExecution_Once()
+        public void Schedule_NextExecution_Once()
         {
-            DateTime dateTime = new DateTime(2020,01,08);
+            DateTime dateTime = new DateTime(2020, 01, 08);
 
 
             SchedulerConfiguration configuration = new SchedulerConfiguration();
@@ -44,7 +44,7 @@ namespace TestScheduler
         }
 
         [Fact]
-        public void ScheduleRecurringStartDateMaxValueValidation()
+        public void Schedule_Recurring_StartDateMaxValueValidation()
         {
             DateTime startDate = DateTime.MaxValue;
             DateTime currentDate = new DateTime(2020, 01, 01);
@@ -59,7 +59,7 @@ namespace TestScheduler
         }
 
         [Fact]
-        public void ScheduleRecurringStartEndDateMaxValueValidation()
+        public void Schedule_Recurring_StartEndDateMaxValueValidation()
         {
             DateTime startDate = new DateTime(2020, 01, 01);
             DateTime endDate = DateTime.MaxValue;
@@ -76,7 +76,7 @@ namespace TestScheduler
         }
 
         [Fact]
-        public void ScheduleRecurringStartEndGreaterThanEndDateValidation()
+        public void Schedule_Recurring_StartEndGreaterThanEndDateValidation()
         {
             DateTime startDate = new DateTime(2020, 01, 10);
             DateTime endDate = new DateTime(2020, 01, 01);
@@ -93,47 +93,43 @@ namespace TestScheduler
         }
 
         [Fact]
-        public void ScheduleRecurringIntervalLessThanOneValidation()
+        public void Schedule_Recurring_IntervalLessThanZeroValidation()
         {
             DateTime startDate = new DateTime(2020, 01, 10);
             DateTime endDate = new DateTime(2020, 01, 01);
             DateTime currentDate = new DateTime(2020, 01, 01);
-            int interval = -1;
 
 
             SchedulerConfiguration configuration = new SchedulerConfiguration();
             configuration.Type = SchedulerType.Recurring;
             configuration.StartDate = startDate;
             configuration.EndDate = endDate;
-            configuration.Interval = interval;
 
 
             Assert.Throws<ConfigurationException>(() => Schedule.GetNextExecutionTime(currentDate, configuration));
         }
 
         [Fact]
-        public void ScheduleRecurringDailyNullValidation()
+        public void Schedule_Recurring_Daily_NullValidation()
         {
             DateTime startDate = new DateTime(2020, 01, 10);
             DateTime endDate = new DateTime(2020, 01, 01);
             DateTime currentDate = new DateTime(2020, 01, 01);
-            int interval = -1;
 
 
             SchedulerConfiguration configuration = new SchedulerConfiguration();
             configuration.Type = SchedulerType.Recurring;
             configuration.StartDate = startDate;
             configuration.EndDate = endDate;
-            configuration.Interval = interval;
 
 
             Assert.Throws<ConfigurationException>(() => Schedule.GetNextExecutionTime(currentDate, configuration));
         }
 
         [Fact]
-        public void ScheduleWeeklyConfigurationNullValidation()
+        public void ScheduleWeeklyConfiguration_NullValidation()
         {
-            DateTime currentDate = new DateTime(2020,01,01,4,15,0);
+            DateTime currentDate = new DateTime(2020, 01, 01, 4, 15, 0);
             DateTime startDate = new DateTime(2020, 01, 01);
             DateTime endDate = new DateTime(2020, 02, 01);
 
@@ -141,59 +137,6 @@ namespace TestScheduler
             SchedulerConfiguration configuration = new SchedulerConfiguration();
             configuration.Type = SchedulerType.Recurring;
             configuration.Frequency = FrequencyType.Weekly;
-            configuration.Interval = 1;
-            configuration.StartDate = startDate;
-            configuration.EndDate = endDate;
-
-            Assert.Throws<ConfigurationException>(() => Schedule.GetNextExecutionTime(currentDate, configuration));
-        }
-
-        [Theory]
-        [InlineData(FrequencyType.Weekly, 2, 0, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday },
-        "02:00:00", "00:00:00", "12:00:00", "01/01/2019 00:00:00", "01/01/2020", "01/02/2020")]
-        [InlineData(FrequencyType.Weekly, 2, -1, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday },
-        "02:00:00", "00:00:00", "12:00:00", "01/01/2019 00:00:00", "01/01/2020", "01/02/2020")]
-        [InlineData(FrequencyType.Weekly, 2, 2, new DayOfWeek[] { },
-        "02:00:00", "00:00:00", "12:00:00", "01/01/2019 00:00:00", "01/01/2020", "01/02/2020")]
-        [InlineData(FrequencyType.Weekly, 2, 2, null,
-        "02:00:00", "00:00:00", "12:00:00", "01/01/2019 00:00:00", "01/01/2020", "01/02/2020")]
-
-        public void ScheduleWeeklyConfigurationValidation(FrequencyType frequency, int interval, int occurrenceWeekly,
-            DayOfWeek[] daysOfWeek, string occurrence, string startTimeStr,
-            string endTimeStr, string currentDateStr, string startDateStr, string endDateStr)
-        {
-            DateTime startDate = DateTime.ParseExact(startDateStr, "d", null);
-            DateTime currentDate = DateTime.ParseExact(currentDateStr, "dd/MM/yyyy hh:mm:ss", null);
-            TimeSpan timespanOccurrence = TimeSpan.ParseExact(occurrence, @"hh\:mm\:ss", null);
-            TimeSpan startTime = TimeSpan.ParseExact(startTimeStr, @"hh\:mm\:ss", null);
-            TimeSpan endTime = TimeSpan.ParseExact(endTimeStr, @"hh\:mm\:ss", null);
-
-            DateTime? endDate = null;
-            if (string.IsNullOrEmpty(endDateStr) == false)
-            {
-                endDate = DateTime.ParseExact(endDateStr, "d", null);
-            }
-
-            WeeklyFrequency weeklyFreq = new WeeklyFrequency
-            {
-                DaysOfWeek = daysOfWeek,
-                Occurrence = occurrenceWeekly
-            };
-
-            DailyFrequency dailyFreq = new DailyFrequency
-            {
-                Occurrence = timespanOccurrence,
-                IsRecurring = true,
-                StartTime = startTime,
-                EndTime = endTime
-            };
-
-            SchedulerConfiguration configuration = new SchedulerConfiguration();
-            configuration.Type = SchedulerType.Recurring;
-            configuration.Frequency = frequency;
-            configuration.Interval = interval;
-            configuration.DailyFrequency = dailyFreq;
-            configuration.WeeklyFrequency = weeklyFreq;
             configuration.StartDate = startDate;
             configuration.EndDate = endDate;
 
@@ -201,308 +144,727 @@ namespace TestScheduler
         }
 
 
-
-        [Theory]
-        [InlineData(FrequencyType.Daily, 1, "02:00:00", "04:00:00", "", "01/01/2020 04:15:00", "01/01/2020", "01/02/2020")]
-        [InlineData(FrequencyType.Daily, 1, "02:00:00", "", "08:00:00", "01/01/2020 08:00:00", "01/01/2020", "01/02/2020")]
-        public void ScheduleDailyConfigurationValidation(FrequencyType frequency, int interval, string occurrence, string startTimeStr, string endTimeStr, string currentDateStr, string startDateStr, string endDateStr)
+        #region Daily
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Daily_NonRecurring()
         {
-            DateTime startDate = DateTime.ParseExact(startDateStr, "d", null);
-            DateTime currentDate = DateTime.ParseExact(currentDateStr, "dd/MM/yyyy hh:mm:ss", null);
-            TimeSpan timespanOccurrence = TimeSpan.ParseExact(occurrence, @"hh\:mm\:ss", null);
-            TimeSpan? startTime = null;
-            if (string.IsNullOrEmpty(startTimeStr) == false)
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
             {
-                startTime = TimeSpan.ParseExact(startTimeStr, @"hh\:mm\:ss", null);
-            }
-            TimeSpan? endTime = null;
-            if (string.IsNullOrEmpty(endTimeStr) == false)
-            {
-                endTime = TimeSpan.ParseExact(endTimeStr, @"hh\:mm\:ss", null);
-            }
-
-            DateTime? endDate = null;
-            if (string.IsNullOrEmpty(endDateStr) == false)
-            {
-                endDate = DateTime.ParseExact(endDateStr, "d", null);
-            }
-
-            DailyFrequency dailyFreq = new DailyFrequency
-            {
-                Occurrence = timespanOccurrence,
-                IsRecurring = true,
-                StartTime = startTime,
-                EndTime = endTime
+                IsRecurring = false,
+                Occurrence = new TimeSpan(21, 15, 15)
             };
+
 
             SchedulerConfiguration configuration = new SchedulerConfiguration();
             configuration.Type = SchedulerType.Recurring;
-            configuration.Frequency = frequency;
-            configuration.Interval = interval;
-            configuration.DailyFrequency = dailyFreq;
             configuration.StartDate = startDate;
-            configuration.EndDate = endDate;
+            configuration.DailyFrequency = dailyFreq;
 
-            Assert.Throws<ConfigurationException>(() => Schedule.GetNextExecutionTime(currentDate, configuration));
+
+
+            DateTime?[] executionTimes = Schedule.GetMultipleNextExecutionTimes(new DateTime(2020, 01, 08, 04, 0, 10), configuration, 6);
+
+            executionTimes[0].Should().Be(new DateTime(2020, 01, 08, 21, 15, 15));
+            executionTimes[1].Should().Be(new DateTime(2020, 01, 09, 21, 15, 15));
+            executionTimes[2].Should().Be(new DateTime(2020, 01, 10, 21, 15, 15));
+            executionTimes[3].Should().Be(new DateTime(2020, 01, 11, 21, 15, 15));
+            executionTimes[4].Should().Be(new DateTime(2020, 01, 12, 21, 15, 15));
+            executionTimes[5].Should().Be(new DateTime(2020, 01, 13, 21, 15, 15));
         }
 
-        //[Theory]
-        //[InlineData("08/01/2020 14:00", "01/01/2020", "04/01/2020", "Occurs once. Schedule will be used on 08/01/2020 at 14:00 starting on 01/01/2020")]
-        //public void ScheduleDescription_Once(string dateTimeStr, string startDateStr, string currentDateStr, string expected)
-        //{
-        //    DateTime dateTime = DateTime.ParseExact(dateTimeStr, "g", null);
-        //    DateTime startDate = DateTime.ParseExact(startDateStr, "d", null);
-        //    DateTime currentDate = DateTime.ParseExact(currentDateStr, "d", null);
-
-        //    SchedulerConfiguration configuration = new SchedulerConfiguration();
-        //    configuration.Type = SchedulerType.Once;
-        //    configuration.Frequency = FrequencyType.Daily;
-        //    configuration.DateTimeOnce = dateTime;
-        //    configuration.Interval = 0;
-        //    configuration.StartDate = startDate;
-
-        //    Assert.Equal(expected, Schedule.GetDescription(currentDate, configuration));
-        //}
-
-        [Theory]
-        [InlineData(FrequencyType.Daily, 1, "00:00:00", "04/01/2020", "01/01/2020", "01/02/2020", "05/01/2020 00:00:00")]
-        [InlineData(FrequencyType.Daily, 1, "11:30:00", "05/01/2020", "01/01/2020", "01/02/2020", "06/01/2020 11:30:00")]
-        [InlineData(FrequencyType.Daily, 1, "00:50:00", "06/01/2020", "01/01/2020", "01/02/2020", "07/01/2020 00:50:00")]
-        public void ScheduleNextExecution_RecurringWithDailyFrequencyOnce(FrequencyType frequency, int interval, string occurrence, string currentDateStr, string startDateStr, string endDateStr, string expected)
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Daily_WithSecondsBeforeStart()
         {
-            DateTime startDate = DateTime.ParseExact(startDateStr, "d", null);
-            DateTime currentDate = DateTime.ParseExact(currentDateStr, "d", null);
-            TimeSpan timespanOccurrence = TimeSpan.ParseExact(occurrence, @"hh\:mm\:ss", null);
-            DateTime? endDate = null;
-            if (string.IsNullOrEmpty(endDateStr) == false)
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
             {
-                endDate = DateTime.ParseExact(endDateStr, "d", null);
-            }
-
-            DateTime? expectedDate = null;
-            if (string.IsNullOrEmpty(expected) == false)
-            {
-                expectedDate = DateTime.ParseExact(expected, "dd/MM/yyyy hh:mm:ss", null);
-            }
-
-            DailyFrequency dailyFreq = new DailyFrequency
-            {
-                Occurrence = timespanOccurrence,
-                IsRecurring = false
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(8, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(0, 0, 10)
             };
+
 
             SchedulerConfiguration configuration = new SchedulerConfiguration();
             configuration.Type = SchedulerType.Recurring;
-            configuration.Frequency = frequency;
-            configuration.Interval = interval;
-            configuration.DailyFrequency = dailyFreq;
             configuration.StartDate = startDate;
-            configuration.EndDate = endDate;
+            configuration.DailyFrequency = dailyFreq;
 
-            Assert.Equal(expectedDate, Schedule.GetNextExecutionTime(currentDate, configuration));
+
+
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 01, 0, 0, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 01, 10, 0, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 01,0,10,0), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 01, 0, 0, 10), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
         }
 
-        [Theory]
-        [InlineData(FrequencyType.Daily, 1, "02:00:00", "00:00:00", "12:00:00", "01/01/2020 00:00:00", "01/01/2020", "01/02/2020", "02/01/2020 00:00:00")]
-        [InlineData(FrequencyType.Daily, 1, "02:00:00", "04:00:00", "08:00:00", "01/01/2020 04:15:00", "01/01/2020", "01/02/2020", "02/01/2020 06:00:00")]
-        [InlineData(FrequencyType.Daily, 1, "02:00:00", "04:00:00", "08:00:00", "01/01/2020 08:00:00", "01/01/2020", "01/02/2020", "02/01/2020 04:00:00")]
-        public void ScheduleNextExecution_RecurringWithDailyFrequencyRecurring(FrequencyType frequency, int interval, string occurrence, string startTimeStr, string endTimeStr, string currentDateStr, string startDateStr, string endDateStr, string expected)
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Daily_WithSecondsAfterStart()
         {
-            DateTime startDate = DateTime.ParseExact(startDateStr, "d", null);
-            DateTime currentDate = DateTime.ParseExact(currentDateStr, "dd/MM/yyyy hh:mm:ss", null);
-            TimeSpan timespanOccurrence = TimeSpan.ParseExact(occurrence, @"hh\:mm\:ss", null);
-            TimeSpan startTime = TimeSpan.ParseExact(startTimeStr, @"hh\:mm\:ss", null);
-            TimeSpan endTime = TimeSpan.ParseExact(endTimeStr, @"hh\:mm\:ss", null);
-
-            DateTime? endDate = null;
-            if (string.IsNullOrEmpty(endDateStr) == false)
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
             {
-                endDate = DateTime.ParseExact(endDateStr, "d", null);
-            }
-
-            DateTime? expectedDate = null;
-            if (string.IsNullOrEmpty(expected) == false)
-            {
-                expectedDate = DateTime.ParseExact(expected, "dd/MM/yyyy hh:mm:ss", null);
-            }
-
-            DailyFrequency dailyFreq = new DailyFrequency
-            {
-                Occurrence = timespanOccurrence,
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(8, 0, 0),
                 IsRecurring = true,
-                StartTime = startTime,
-                EndTime = endTime
+                Occurrence = new TimeSpan(0, 0, 10)
             };
+
 
             SchedulerConfiguration configuration = new SchedulerConfiguration();
             configuration.Type = SchedulerType.Recurring;
-            configuration.Frequency = frequency;
-            configuration.Interval = interval;
-            configuration.DailyFrequency = dailyFreq;
             configuration.StartDate = startDate;
-            configuration.EndDate = endDate;
+            configuration.DailyFrequency = dailyFreq;
 
-            Assert.Equal(expectedDate, Schedule.GetNextExecutionTime(currentDate, configuration));
+
+            DateTime?[] executionTimes = Schedule.GetMultipleNextExecutionTimes(new DateTime(2020, 01, 08, 04, 0, 10),configuration,6);
+
+            executionTimes[0].Should().Be(new DateTime(2020, 01, 08, 4, 0, 20));
+            executionTimes[1].Should().Be(new DateTime(2020, 01, 08, 4, 0, 30));
+            executionTimes[2].Should().Be(new DateTime(2020, 01, 08, 4, 0, 40));
+            executionTimes[3].Should().Be(new DateTime(2020, 01, 08, 4, 0, 50));
+            executionTimes[4].Should().Be(new DateTime(2020, 01, 08, 4, 1, 0));
+            executionTimes[5].Should().Be(new DateTime(2020, 01, 08, 4, 1, 10));
+
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 08, 04, 0, 10), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 20));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 08, 04, 0, 25), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 30));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 08, 04, 10, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 10, 10));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 08, 04, 10, 15), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 10, 20));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 20, 04, 0, 10), configuration).Should().Be(new DateTime(2020, 01, 20, 4, 0, 20));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 20, 04, 0, 25), configuration).Should().Be(new DateTime(2020, 01, 20, 4, 0, 30));
         }
 
-        [Theory]
-        [InlineData(FrequencyType.Weekly, 1, 2, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday },
-            "02:00:00", "04:00:00", "08:00:00", "01/01/2019 00:00:00", "01/01/2020", "01/02/2020", "01/01/2020 04:00:00")]
-        [InlineData(FrequencyType.Weekly, 1, 2, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday },
-            "02:00:00", "04:00:00", "08:00:00", "01/01/2019 04:15:00", "01/01/2020", "01/02/2020", "01/01/2020 04:00:00")]
-        [InlineData(FrequencyType.Weekly, 1, 2, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday },
-            "02:00:00", "04:00:00", "08:00:00", "01/01/2019 08:00:00", "01/01/2020", "01/02/2020", "01/01/2020 04:00:00")]
-        [InlineData(FrequencyType.Weekly, 1, 2, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday },
-            "02:00:00", "04:00:00", "08:00:00", "02/01/2020 08:00:00", "01/01/2020", "01/02/2020", "03/01/2020 04:00:00")]
-        [InlineData(FrequencyType.Weekly, 1, 2, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday },
-            "02:00:00", "04:00:00", "08:00:00", "03/01/2020 08:00:00", "01/01/2020", "01/02/2020", "13/01/2020 04:00:00")]
-        [InlineData(FrequencyType.Weekly, 1, 2, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Thursday, DayOfWeek.Friday },
-            "02:00:00", "04:00:00", "08:00:00", "13/01/2020 06:00:00", "01/01/2020", "01/02/2020", "16/01/2020 04:00:00")]
-        [InlineData(FrequencyType.Weekly, 1, 2, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Thursday, DayOfWeek.Friday },
-            "02:00:00", "04:00:00", "08:00:00", "16/01/2020 04:00:00", "01/01/2020", "01/02/2020", "17/01/2020 04:00:00")]
-
-        public void ScheduleNextExecution_RecurringWithWeeklyFrequencyRecurring(FrequencyType frequency, int interval, int occurrenceWeekly,
-            DayOfWeek[] daysOfWeek, string occurrence, string startTimeStr, string endTimeStr, string currentDateStr,
-            string startDateStr, string endDateStr, string expected)
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Daily_WithMinutesBeforeStart()
         {
-            DateTime startDate = DateTime.ParseExact(startDateStr, "d", null);
-            DateTime currentDate = DateTime.ParseExact(currentDateStr, "dd/MM/yyyy hh:mm:ss", null);
-            TimeSpan timespanOccurrence = TimeSpan.ParseExact(occurrence, @"hh\:mm\:ss", null);
-            TimeSpan startTime = TimeSpan.ParseExact(startTimeStr, @"hh\:mm\:ss", null);
-            TimeSpan endTime = TimeSpan.ParseExact(endTimeStr, @"hh\:mm\:ss", null);
-
-            DateTime? endDate = null;
-            if (string.IsNullOrEmpty(endDateStr) == false)
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
             {
-                endDate = DateTime.ParseExact(endDateStr, "d", null);
-            }
-
-            DateTime? expectedDate = null;
-            if (string.IsNullOrEmpty(expected) == false)
-            {
-                expectedDate = DateTime.ParseExact(expected, "dd/MM/yyyy hh:mm:ss", null);
-            }
-
-            WeeklyFrequency weeklyFreq = new WeeklyFrequency
-            {
-                DaysOfWeek = daysOfWeek,
-                Occurrence = occurrenceWeekly
-            };
-
-            DailyFrequency dailyFreq = new DailyFrequency
-            {
-                Occurrence = timespanOccurrence,
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(8, 0, 0),
                 IsRecurring = true,
-                StartTime = startTime,
-                EndTime = endTime
+                Occurrence = new TimeSpan(0, 20, 0)
             };
+
 
             SchedulerConfiguration configuration = new SchedulerConfiguration();
             configuration.Type = SchedulerType.Recurring;
-            configuration.Frequency = frequency;
-            configuration.Interval = interval;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+
+
+
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 01, 0, 0, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 01, 10, 0, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 01, 0, 10, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 01, 0, 0, 10), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
+        }
+
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Daily_WithMinutesAfterStart()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(8, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(0, 20, 0)
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+
+
+            DateTime?[] executionTimes = Schedule.GetMultipleNextExecutionTimes(new DateTime(2020, 01, 08, 04, 0, 0), configuration, 6);
+
+            executionTimes[0].Should().Be(new DateTime(2020, 01, 08, 4, 20, 0));
+            executionTimes[1].Should().Be(new DateTime(2020, 01, 08, 4, 40, 0));
+            executionTimes[2].Should().Be(new DateTime(2020, 01, 08, 5, 0, 0));
+            executionTimes[3].Should().Be(new DateTime(2020, 01, 08, 5, 20, 0));
+            executionTimes[4].Should().Be(new DateTime(2020, 01, 08, 5, 40, 0));
+            executionTimes[5].Should().Be(new DateTime(2020, 01, 08, 6, 0, 0));
+
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 08, 04, 0, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 20, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 08, 04, 40, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 5, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 08, 04, 10, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 20, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 20, 04, 0, 0), configuration).Should().Be(new DateTime(2020, 01, 20, 4, 20, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 20, 04, 0, 15), configuration).Should().Be(new DateTime(2020, 01, 20, 4, 20, 0));
+        }
+
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Daily_WithHoursBeforeStart()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(8, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(1, 0, 0)
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+
+
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 01, 0, 0, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 06, 10, 0, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 05, 0, 10, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 04, 0, 0, 10), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
+        }
+
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Daily_WithHoursAfterStart()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(10, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(1, 0, 0)
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+
+
+            DateTime?[] executionTimes = Schedule.GetMultipleNextExecutionTimes(new DateTime(2020, 01, 08, 04, 0, 0), configuration, 6);
+
+            executionTimes[0].Should().Be(new DateTime(2020, 01, 08, 5, 0, 0));
+            executionTimes[1].Should().Be(new DateTime(2020, 01, 08, 6, 0, 0));
+            executionTimes[2].Should().Be(new DateTime(2020, 01, 08, 7, 0, 0));
+            executionTimes[3].Should().Be(new DateTime(2020, 01, 08, 8, 0, 0));
+            executionTimes[4].Should().Be(new DateTime(2020, 01, 08, 9, 0, 0));
+            executionTimes[5].Should().Be(new DateTime(2020, 01, 08, 10, 0, 0));
+
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 08, 04, 0, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 5, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 08, 04, 40, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 5, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 08, 04, 10, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 5, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 20, 08, 0, 0), configuration).Should().Be(new DateTime(2020, 01, 20, 9, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 20, 09, 59, 15), configuration).Should().Be(new DateTime(2020, 01, 20, 10, 0, 0));
+        }
+
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Daily_OverEndTime()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(8, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(1, 0, 0)
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+
+
+            DateTime?[] executionTimes = Schedule.GetMultipleNextExecutionTimes(new DateTime(2020, 01, 08, 06, 0, 0), configuration, 6);
+
+            executionTimes[0].Should().Be(new DateTime(2020, 01, 08, 7, 0, 0));
+            executionTimes[1].Should().Be(new DateTime(2020, 01, 08, 8, 0, 0));
+            executionTimes[2].Should().Be(new DateTime(2020, 01, 09, 4, 0, 0));
+            executionTimes[3].Should().Be(new DateTime(2020, 01, 09, 5, 0, 0));
+            executionTimes[4].Should().Be(new DateTime(2020, 01, 09, 6, 0, 0));
+            executionTimes[5].Should().Be(new DateTime(2020, 01, 09, 7, 0, 0));
+
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 08, 04, 0, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 5, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 08, 04, 40, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 5, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 31, 12, 10, 0), configuration).Should().Be(new DateTime(2020, 02, 01, 4, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 20, 14, 55, 0), configuration).Should().Be(new DateTime(2020, 01, 21, 4, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 20, 08, 0, 01), configuration).Should().Be(new DateTime(2020, 01, 21, 4, 0, 0));
+        }
+
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Daily_OverEndDate()
+        {
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(8, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(1, 0, 0)
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = new DateTime(2020, 01, 08);
+            configuration.EndDate = new DateTime(2020, 01, 09);
+            configuration.DailyFrequency = dailyFreq;
+
+
+            DateTime?[] executionTimes = Schedule.GetMultipleNextExecutionTimes(new DateTime(2020, 01, 08, 06, 0, 0), configuration, 6);
+
+            executionTimes[0].Should().Be(new DateTime(2020, 01, 08, 7, 0, 0));
+            executionTimes[1].Should().Be(new DateTime(2020, 01, 08, 8, 0, 0));
+            executionTimes[2].Should().Be(null);
+            executionTimes[3].Should().Be(null);
+            executionTimes[4].Should().Be(null);
+            executionTimes[5].Should().Be(null);
+        }
+        #endregion
+        #region Weekly
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Weekly_AllWeekDays_SameDay()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(8, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(0, 20, 0)
+            };
+
+            WeeklyFrequency weeklyFreq = new WeeklyFrequency()
+            {
+                DaysOfWeek = new DayOfWeek[] {DayOfWeek.Monday, DayOfWeek.Tuesday , DayOfWeek.Wednesday , DayOfWeek.Thursday,
+                                              DayOfWeek.Friday,DayOfWeek.Saturday,DayOfWeek.Sunday},
+                Occurrence = 1
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Frequency = FrequencyType.Weekly;
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
             configuration.DailyFrequency = dailyFreq;
             configuration.WeeklyFrequency = weeklyFreq;
-            configuration.StartDate = startDate;
-            configuration.EndDate = endDate;
 
-            Assert.Equal(expectedDate, Schedule.GetNextExecutionTime(currentDate, configuration));
+
+            DateTime?[] executionTimes = Schedule.GetMultipleNextExecutionTimes(new DateTime(2020, 01, 01, 12, 15, 10), configuration, 6);
+
+            executionTimes[0].Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
+            executionTimes[1].Should().Be(new DateTime(2020, 01, 08, 4, 20, 0));
+            executionTimes[2].Should().Be(new DateTime(2020, 01, 08, 4, 40, 0));
+            executionTimes[3].Should().Be(new DateTime(2020, 01, 08, 5, 0, 0));
+            executionTimes[4].Should().Be(new DateTime(2020, 01, 08, 5, 20, 0));
+            executionTimes[5].Should().Be(new DateTime(2020, 01, 08, 5, 40, 0));
         }
 
-
-        [Theory]
-        [InlineData(FrequencyType.Daily, 2, "02:00:00", "00:00:00", "12:00:00", "01/01/2020 00:00:00", "01/01/2020",
-            "01/02/2020", "Occurs every 2 days every 2 hours between 00:00:00 and 12:00:00 starting on 01/01/2020")]
-        [InlineData(FrequencyType.Daily, 2, "00:10:00", "00:00:00", "12:00:00", "01/01/2020 00:00:00", "01/01/2020",
-            "01/02/2020", "Occurs every 2 days every 10 minutes between 00:00:00 and 12:00:00 starting on 01/01/2020")]
-        [InlineData(FrequencyType.Daily, 2, "00:00:10", "00:00:00", "12:00:00", "01/01/2020 00:00:00", "01/01/2020",
-            "01/02/2020", "Occurs every 2 days every 10 seconds between 00:00:00 and 12:00:00 starting on 01/01/2020")]
-        public void ScheduleDescription_RecurringDaily(FrequencyType frequency, int interval, string occurrence, string startTimeStr,
-            string endTimeStr, string currentDateStr, string startDateStr, string endDateStr, string expected)
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Weekly_AllWeekDays_ChangingDay()
         {
-            DateTime startDate = DateTime.ParseExact(startDateStr, "d", null);
-            DateTime currentDate = DateTime.ParseExact(currentDateStr, "dd/MM/yyyy hh:mm:ss", null);
-            TimeSpan timespanOccurrence = TimeSpan.ParseExact(occurrence, @"hh\:mm\:ss", null);
-            TimeSpan startTime = TimeSpan.ParseExact(startTimeStr, @"hh\:mm\:ss", null);
-            TimeSpan endTime = TimeSpan.ParseExact(endTimeStr, @"hh\:mm\:ss", null);
-
-            DateTime? endDate = null;
-            if (string.IsNullOrEmpty(endDateStr) == false)
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
             {
-                endDate = DateTime.ParseExact(endDateStr, "d", null);
-            }
-
-            DailyFrequency dailyFreq = new DailyFrequency
-            {
-                Occurrence = timespanOccurrence,
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(6, 0, 0),
                 IsRecurring = true,
-                StartTime = startTime,
-                EndTime = endTime
+                Occurrence = new TimeSpan(2, 0, 0)
             };
 
+            WeeklyFrequency weeklyFreq = new WeeklyFrequency()
+            {
+                DaysOfWeek = new DayOfWeek[] {DayOfWeek.Monday, DayOfWeek.Tuesday , DayOfWeek.Wednesday , DayOfWeek.Thursday,
+                                              DayOfWeek.Friday,DayOfWeek.Saturday,DayOfWeek.Sunday},
+                Occurrence = 1
+            };
+
+
             SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Frequency = FrequencyType.Weekly;
             configuration.Type = SchedulerType.Recurring;
-            configuration.Frequency = frequency;
-            configuration.Interval = interval;
-            configuration.DailyFrequency = dailyFreq;
             configuration.StartDate = startDate;
-            configuration.EndDate = endDate;
-
-            Assert.Equal(expected, Schedule.GetDescription(currentDate, configuration));
-        }
-
-        [Theory]
-        [InlineData(FrequencyType.Weekly, 2, 2, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday },
-            "02:00:00", "00:00:00", "12:00:00", "01/01/2019 00:00:00", "01/01/2020", "01/02/2020",
-            "Occurs every 2 weeks on monday, wednesday and friday every 2 hours between 00:00:00 and 12:00:00 starting on 01/01/2020")]
-        [InlineData(FrequencyType.Weekly, 2, 4, new DayOfWeek[] { DayOfWeek.Friday },
-            "02:00:00", "00:00:00", "12:00:00", "01/01/2019 04:15:00", "01/01/2020", "01/02/2020",
-            "Occurs every 4 weeks on friday every 2 hours between 00:00:00 and 12:00:00 starting on 01/01/2020")]
-        [InlineData(FrequencyType.Weekly, 2, 2, new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Wednesday },
-            "02:00:00", "00:00:00", "12:00:00", "01/01/2019 08:00:00", "01/01/2020", "01/02/2020",
-            "Occurs every 2 weeks on monday and wednesday every 2 hours between 00:00:00 and 12:00:00 starting on 01/01/2020")]
-        public void ScheduleDescription_RecurringWeekly(FrequencyType frequency, int interval, int occurrenceWeekly,
-            DayOfWeek[] daysOfWeek, string occurrence, string startTimeStr,
-            string endTimeStr, string currentDateStr, string startDateStr, string endDateStr, string expected)
-        {
-            DateTime startDate = DateTime.ParseExact(startDateStr, "d", null);
-            DateTime currentDate = DateTime.ParseExact(currentDateStr, "dd/MM/yyyy hh:mm:ss", null);
-            TimeSpan timespanOccurrence = TimeSpan.ParseExact(occurrence, @"hh\:mm\:ss", null);
-            TimeSpan startTime = TimeSpan.ParseExact(startTimeStr, @"hh\:mm\:ss", null);
-            TimeSpan endTime = TimeSpan.ParseExact(endTimeStr, @"hh\:mm\:ss", null);
-
-            DateTime? endDate = null;
-            if (string.IsNullOrEmpty(endDateStr) == false)
-            {
-                endDate = DateTime.ParseExact(endDateStr, "d", null);
-            }
-
-            WeeklyFrequency weeklyFreq = new WeeklyFrequency
-            {
-                DaysOfWeek = daysOfWeek,
-                Occurrence = occurrenceWeekly
-            };
-
-            DailyFrequency dailyFreq = new DailyFrequency
-            {
-                Occurrence = timespanOccurrence,
-                IsRecurring = true,
-                StartTime = startTime,
-                EndTime = endTime
-            };
-
-            SchedulerConfiguration configuration = new SchedulerConfiguration();
-            configuration.Type = SchedulerType.Recurring;
-            configuration.Frequency = frequency;
-            configuration.Interval = interval;
             configuration.DailyFrequency = dailyFreq;
             configuration.WeeklyFrequency = weeklyFreq;
-            configuration.StartDate = startDate;
-            configuration.EndDate = endDate;
 
-            Assert.Equal(expected, Schedule.GetDescription(currentDate, configuration));
+
+            DateTime?[] executionTimes = Schedule.GetMultipleNextExecutionTimes(new DateTime(2020, 01, 01, 12, 15, 10), configuration, 6);
+
+            executionTimes[0].Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
+            executionTimes[1].Should().Be(new DateTime(2020, 01, 08, 6, 0, 0));
+            executionTimes[2].Should().Be(new DateTime(2020, 01, 09, 4, 0, 0));
+            executionTimes[3].Should().Be(new DateTime(2020, 01, 09, 6, 0, 0));
+            executionTimes[4].Should().Be(new DateTime(2020, 01, 10, 4, 0, 0));
+            executionTimes[5].Should().Be(new DateTime(2020, 01, 10, 6, 0, 0));
+        }
+
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Weekly_AllWeekDaysExceptOne_ChangingDay()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(6, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(2, 0, 0)
+            };
+
+            WeeklyFrequency weeklyFreq = new WeeklyFrequency()
+            {
+                DaysOfWeek = new DayOfWeek[] {DayOfWeek.Monday, DayOfWeek.Tuesday , DayOfWeek.Wednesday ,
+                                              DayOfWeek.Friday,DayOfWeek.Saturday,DayOfWeek.Sunday},
+                Occurrence = 1
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Frequency = FrequencyType.Weekly;
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+            configuration.WeeklyFrequency = weeklyFreq;
+
+
+            DateTime?[] executionTimes = Schedule.GetMultipleNextExecutionTimes(new DateTime(2020, 01, 01, 12, 15, 10), configuration, 8);
+
+            executionTimes[0].Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
+            executionTimes[1].Should().Be(new DateTime(2020, 01, 08, 6, 0, 0));
+            executionTimes[2].Should().Be(new DateTime(2020, 01, 10, 4, 0, 0));
+            executionTimes[3].Should().Be(new DateTime(2020, 01, 10, 6, 0, 0));
+            executionTimes[4].Should().Be(new DateTime(2020, 01, 11, 4, 0, 0));
+            executionTimes[5].Should().Be(new DateTime(2020, 01, 11, 6, 0, 0));
+            executionTimes[6].Should().Be(new DateTime(2020, 01, 12, 4, 0, 0));
+            executionTimes[7].Should().Be(new DateTime(2020, 01, 12, 6, 0, 0));
+        }
+
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Weekly_OnlyMonday()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(6, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(2, 0, 0)
+            };
+
+            WeeklyFrequency weeklyFreq = new WeeklyFrequency()
+            {
+                DaysOfWeek = new DayOfWeek[] {DayOfWeek.Monday},
+                Occurrence = 1
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Frequency = FrequencyType.Weekly;
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+            configuration.WeeklyFrequency = weeklyFreq;
+
+
+            DateTime?[] executionTimes = Schedule.GetMultipleNextExecutionTimes(new DateTime(2020, 01, 01, 12, 15, 10), configuration, 8);
+
+            executionTimes[0].Should().Be(new DateTime(2020, 01, 13, 4, 0, 0));
+            executionTimes[1].Should().Be(new DateTime(2020, 01, 13, 6, 0, 0));
+            executionTimes[2].Should().Be(new DateTime(2020, 01, 20, 4, 0, 0));
+            executionTimes[3].Should().Be(new DateTime(2020, 01, 20, 6, 0, 0));
+            executionTimes[4].Should().Be(new DateTime(2020, 01, 27, 4, 0, 0));
+            executionTimes[5].Should().Be(new DateTime(2020, 01, 27, 6, 0, 0));
+            executionTimes[6].Should().Be(new DateTime(2020, 02, 03, 4, 0, 0));
+            executionTimes[7].Should().Be(new DateTime(2020, 02, 03, 6, 0, 0));
+        }
+
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Weekly_OnlyTuesday()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(6, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(2, 0, 0)
+            };
+
+            WeeklyFrequency weeklyFreq = new WeeklyFrequency()
+            {
+                DaysOfWeek = new DayOfWeek[] { DayOfWeek.Tuesday },
+                Occurrence = 1
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Frequency = FrequencyType.Weekly;
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+            configuration.WeeklyFrequency = weeklyFreq;
+
+
+            DateTime?[] executionTimes = Schedule.GetMultipleNextExecutionTimes(new DateTime(2020, 01, 01, 12, 15, 10), configuration, 8);
+
+            executionTimes[0].Should().Be(new DateTime(2020, 01, 14, 4, 0, 0));
+            executionTimes[1].Should().Be(new DateTime(2020, 01, 14, 6, 0, 0));
+            executionTimes[2].Should().Be(new DateTime(2020, 01, 21, 4, 0, 0));
+            executionTimes[3].Should().Be(new DateTime(2020, 01, 21, 6, 0, 0));
+            executionTimes[4].Should().Be(new DateTime(2020, 01, 28, 4, 0, 0));
+            executionTimes[5].Should().Be(new DateTime(2020, 01, 28, 6, 0, 0));
+            executionTimes[6].Should().Be(new DateTime(2020, 02, 04, 4, 0, 0));
+            executionTimes[7].Should().Be(new DateTime(2020, 02, 04, 6, 0, 0));
+        }
+
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Weekly_OnlyWednesday()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(6, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(2, 0, 0)
+            };
+
+            WeeklyFrequency weeklyFreq = new WeeklyFrequency()
+            {
+                DaysOfWeek = new DayOfWeek[] { DayOfWeek.Wednesday },
+                Occurrence = 1
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Frequency = FrequencyType.Weekly;
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+            configuration.WeeklyFrequency = weeklyFreq;
+
+
+            DateTime?[] executionTimes = Schedule.GetMultipleNextExecutionTimes(new DateTime(2020, 01, 01, 12, 15, 10), configuration, 8);
+
+            executionTimes[0].Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
+            executionTimes[1].Should().Be(new DateTime(2020, 01, 08, 6, 0, 0));
+            executionTimes[2].Should().Be(new DateTime(2020, 01, 15, 4, 0, 0));
+            executionTimes[3].Should().Be(new DateTime(2020, 01, 15, 6, 0, 0));
+            executionTimes[4].Should().Be(new DateTime(2020, 01, 22, 4, 0, 0));
+            executionTimes[5].Should().Be(new DateTime(2020, 01, 22, 6, 0, 0));
+            executionTimes[6].Should().Be(new DateTime(2020, 01, 29, 4, 0, 0));
+            executionTimes[7].Should().Be(new DateTime(2020, 01, 29, 6, 0, 0));
+        }
+
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Weekly_OnlyThursday()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(6, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(2, 0, 0)
+            };
+
+            WeeklyFrequency weeklyFreq = new WeeklyFrequency()
+            {
+                DaysOfWeek = new DayOfWeek[] { DayOfWeek.Thursday },
+                Occurrence = 1
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Frequency = FrequencyType.Weekly;
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+            configuration.WeeklyFrequency = weeklyFreq;
+
+
+            DateTime?[] executionTimes = Schedule.GetMultipleNextExecutionTimes(new DateTime(2020, 01, 01, 12, 15, 10), configuration, 8);
+
+            executionTimes[0].Should().Be(new DateTime(2020, 01, 09, 4, 0, 0));
+            executionTimes[1].Should().Be(new DateTime(2020, 01, 09, 6, 0, 0));
+            executionTimes[2].Should().Be(new DateTime(2020, 01, 16, 4, 0, 0));
+            executionTimes[3].Should().Be(new DateTime(2020, 01, 16, 6, 0, 0));
+            executionTimes[4].Should().Be(new DateTime(2020, 01, 23, 4, 0, 0));
+            executionTimes[5].Should().Be(new DateTime(2020, 01, 23, 6, 0, 0));
+            executionTimes[6].Should().Be(new DateTime(2020, 01, 30, 4, 0, 0));
+            executionTimes[7].Should().Be(new DateTime(2020, 01, 30, 6, 0, 0));
+        }
+
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Weekly_OnlyFriday()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(6, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(2, 0, 0)
+            };
+
+            WeeklyFrequency weeklyFreq = new WeeklyFrequency()
+            {
+                DaysOfWeek = new DayOfWeek[] { DayOfWeek.Friday },
+                Occurrence = 1
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Frequency = FrequencyType.Weekly;
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+            configuration.WeeklyFrequency = weeklyFreq;
+
+
+            DateTime?[] executionTimes = Schedule.GetMultipleNextExecutionTimes(new DateTime(2020, 01, 01, 12, 15, 10), configuration, 8);
+
+            executionTimes[0].Should().Be(new DateTime(2020, 01, 10, 4, 0, 0));
+            executionTimes[1].Should().Be(new DateTime(2020, 01, 10, 6, 0, 0));
+            executionTimes[2].Should().Be(new DateTime(2020, 01, 17, 4, 0, 0));
+            executionTimes[3].Should().Be(new DateTime(2020, 01, 17, 6, 0, 0));
+            executionTimes[4].Should().Be(new DateTime(2020, 01, 24, 4, 0, 0));
+            executionTimes[5].Should().Be(new DateTime(2020, 01, 24, 6, 0, 0));
+            executionTimes[6].Should().Be(new DateTime(2020, 01, 31, 4, 0, 0));
+            executionTimes[7].Should().Be(new DateTime(2020, 01, 31, 6, 0, 0));
         }
 
 
+        #endregion
+        #region Descriptions
+        [Fact]
+        public void Schedule_Description_Once()
+        {
+            DateTime dateTime = new DateTime(2020, 01, 08,12,55,15);
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Type = SchedulerType.Once;
+            configuration.DateTimeOnce = dateTime;
+
+
+            Schedule.GetDescription(new DateTime(2020, 01, 01,08,21,15), configuration).Should()
+                .Be("Occurs once. Schedule will be used on 08/01/2020 at 12:55");
+        }
+
+        [Fact]
+        public void Schedule_Description_Recurring_Daily_NonRecurring()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                IsRecurring = false,
+                Occurrence = new TimeSpan(21, 15, 15)
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+
+
+
+            Schedule.GetDescription(new DateTime(2020, 01, 01, 08, 21, 15), configuration).Should()
+                .Be("Occurs everyday once at 21:15:15 starting on 08/01/2020");
+        }
+
+        [Fact]
+        public void Schedule_Description_Recurring_Daily_WithSeconds()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(8, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(0, 0, 10)
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+
+
+
+            Schedule.GetDescription(new DateTime(2020, 01, 01, 08, 21, 15), configuration).Should()
+                .Be("Occurs everyday every 10 seconds between 04:00:00 and 08:00:00 starting on 08/01/2020");
+        }
+
+        [Fact]
+        public void Schedule_Description_Recurring_Daily_WithMinutes()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(8, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(0, 20, 0)
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+
+
+            Schedule.GetDescription(new DateTime(2020, 01, 01, 08, 21, 15), configuration).Should()
+                .Be("Occurs everyday every 20 minutes between 04:00:00 and 08:00:00 starting on 08/01/2020");
+        }
+
+
+        [Fact]
+        public void Schedule_Description_Recurring_Daily_WithHours()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(8, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(1, 0, 0)
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+
+
+            Schedule.GetDescription(new DateTime(2020, 01, 01, 08, 21, 15), configuration).Should()
+                .Be("Occurs everyday every 1 hour between 04:00:00 and 08:00:00 starting on 08/01/2020");
+        }
+
+        [Fact]
+        public void Schedule_Description_NotOccurring()
+        {
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(8, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(1, 0, 0)
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = new DateTime(2020, 01, 01);
+            configuration.EndDate = new DateTime(2020, 02, 01);
+            configuration.DailyFrequency = dailyFreq;
+
+
+            Schedule.GetDescription(new DateTime(2020, 03, 01, 08, 21, 15), configuration).Should()
+                .Be("Will not occur. Schedule will end on 01/02/2020");
+        }
+        #endregion
     }
 }

@@ -13,7 +13,6 @@ namespace Scheduler
         public SchedulerType Type { get; set; }
         public DateTime? DateTimeOnce { get; set; }
         public FrequencyType Frequency { get; set; }
-        public int Interval { get; set; }
         public DailyFrequency DailyFrequency { get; set; }
         public WeeklyFrequency WeeklyFrequency { get; set; }
         public DateTime StartDate { get; set; }

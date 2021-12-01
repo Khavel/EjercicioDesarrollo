@@ -43,7 +43,7 @@ namespace Scheduler
                 {
                     if(IsRecurring == false)
                     {
-                        description = string.Format(OCCURRENCE_STR_ONCE, Occurrence.ToString("hh:mm:ss"));
+                        description = string.Format(OCCURRENCE_STR_ONCE, Occurrence.ToString(@"hh\:mm\:ss"));
                     }
                     else
                     {
@@ -57,6 +57,10 @@ namespace Scheduler
                         {
                             timeStr = "minutes";
                             timePart = Occurrence.Minutes;
+                        }
+                        if(timePart == 1)
+                        {
+                            timeStr = timeStr.Substring(0, timeStr.Length - 1);
                         }
                         description = string.Format(OCCURRENCE_STR_RECURRING, timePart, timeStr,
                             StartTime.Value.ToString(@"hh\:mm\:ss"), EndTime.Value.ToString(@"hh\:mm\:ss"));
