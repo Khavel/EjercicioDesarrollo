@@ -172,21 +172,28 @@ namespace Scheduler
                 return theDate;
             }
 
-            DateTime theDateAux = theDate.AddDays(1);
-            while (theDateAux.DayOfWeek != theDate.DayOfWeek)
+            int weekOfYearStart = WeeklyFrequency.GetWeekOfYear(configuration.StartDate);
+
+            DateTime theDateAux = theDate;
+            int counter = 0;
+            while (counter < 365)
             {
-                if (configuration.WeeklyFrequency.DaysOfWeek.Any(T => T == theDateAux.DayOfWeek))
+                theDateAux = theDateAux.AddDays(1);
+                if (configuration.WeeklyFrequency.DaysOfWeek.Any(T => T == theDateAux.DayOfWeek)
+                    && (WeeklyFrequency.GetWeekOfYear(theDateAux) - weekOfYearStart) % configuration.WeeklyFrequency.Occurrence == 0)
                 {
                     return theDateAux;
                 }
-                theDateAux = theDateAux.AddDays(1);
-            }
-            theDateAux = theDateAux.AddDays(((configuration.WeeklyFrequency.Occurrence - 1) * 7) + 1);
-            if (configuration.WeeklyFrequency.DaysOfWeek.Any(T => T == theDateAux.DayOfWeek))
-            {
-                return theDateAux;
+                counter++;
             }
             return getNextDateWeekly(theDateAux, configuration);
+            //if(theDateAux.DayOfWeek != DayOfWeek.Monday)
+            //theDateAux = theDateAux.AddDays((configuration.WeeklyFrequency.Occurrence - 1) * 7) ;
+            //if (configuration.WeeklyFrequency.DaysOfWeek.Any(T => T == theDateAux.DayOfWeek))
+            //{
+            //    return theDateAux;
+            //}
+            //return getNextDateWeekly(theDateAux, configuration);
         }
 
         public static string GetDescription(DateTime currentDate, SchedulerConfiguration configuration)

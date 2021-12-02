@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Globalization;
+using System.Linq;
 
 namespace Scheduler
 {
@@ -6,6 +8,7 @@ namespace Scheduler
     {
         private const string OCCURRENCE_STR = "Occurs every {0} weeks on {1} ";
         private string description;
+        private DayOfWeek[] daysOfWeek;
 
         public WeeklyFrequency()
         {
@@ -36,11 +39,45 @@ namespace Scheduler
                         daysOfWeekStr = daysOfWeekStr.Remove(daysOfWeekStr.Length - 2, 2);
                     }
                     description = string.Format(OCCURRENCE_STR, Occurrence, daysOfWeekStr.ToLower());
+                    if(Occurrence == 1)
+                    {
+                        description = description.Replace("weeks", "week");
+                    }
                 }
                 return description;
             }
         }
         public int Occurrence { get; set; }
-        public DayOfWeek[] DaysOfWeek { get; set; }
+        public DayOfWeek[] DaysOfWeek 
+        {
+            get
+            {
+                return daysOfWeek;
+            }
+            set
+            {
+                daysOfWeek = value.OrderBy(D => ((int)D + 6) % 7).ToArray();
+            }
+        }
+
+        public static int GetWeekOfYear(DateTime date)
+        {
+            DayOfWeek day = CultureInfo.InvariantCulture.Calendar.GetDayOfWeek(date);
+            if (day >= DayOfWeek.Monday && day <= DayOfWeek.Wednesday)
+            {
+                date = date.AddDays(3);
+            }
+            return CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(date, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+        }
+
+        public static int GetWeeksInYear(int year)
+        {
+            DateTimeFormatInfo theFormatInfo = DateTimeFormatInfo.CurrentInfo;
+            DateTime lastDayOfYear = new DateTime(year, 12, 31);
+            Calendar cal = theFormatInfo.Calendar;
+            return cal.GetWeekOfYear(lastDayOfYear, theFormatInfo.CalendarWeekRule,
+                                                theFormatInfo.FirstDayOfWeek);
+        }
+
     }
 }
