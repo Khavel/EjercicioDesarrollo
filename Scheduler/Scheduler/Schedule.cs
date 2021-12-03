@@ -187,13 +187,6 @@ namespace Scheduler
                 counter++;
             }
             return getNextDateWeekly(theDateAux, configuration);
-            //if(theDateAux.DayOfWeek != DayOfWeek.Monday)
-            //theDateAux = theDateAux.AddDays((configuration.WeeklyFrequency.Occurrence - 1) * 7) ;
-            //if (configuration.WeeklyFrequency.DaysOfWeek.Any(T => T == theDateAux.DayOfWeek))
-            //{
-            //    return theDateAux;
-            //}
-            //return getNextDateWeekly(theDateAux, configuration);
         }
 
         public static string GetDescription(DateTime currentDate, SchedulerConfiguration configuration)

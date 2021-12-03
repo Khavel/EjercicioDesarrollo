@@ -143,6 +143,150 @@ namespace TestScheduler
             Assert.Throws<ConfigurationException>(() => Schedule.GetNextExecutionTime(currentDate, configuration));
         }
 
+        [Fact]
+        public void ScheduleWeeklyConfiguration_NoDaysSpecified()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(6, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(2, 0, 0)
+            };
+
+            WeeklyFrequency weeklyFreq = new WeeklyFrequency()
+            {
+                DaysOfWeek = new DayOfWeek[] {},
+                Occurrence = 1
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Frequency = FrequencyType.Weekly;
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+            configuration.WeeklyFrequency = weeklyFreq;
+
+            Assert.Throws<ConfigurationException>(() => Schedule.GetNextExecutionTime(new DateTime(2020,01,01), configuration));
+        }
+
+        [Fact]
+        public void ScheduleWeeklyConfiguration_NoValidOccurrence()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(6, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(2, 0, 0)
+            };
+
+            WeeklyFrequency weeklyFreq = new WeeklyFrequency()
+            {
+                DaysOfWeek = new DayOfWeek[] {DayOfWeek.Monday},
+                Occurrence = 0
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Frequency = FrequencyType.Weekly;
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+            configuration.WeeklyFrequency = weeklyFreq;
+
+            Assert.Throws<ConfigurationException>(() => Schedule.GetNextExecutionTime(new DateTime(2020, 01, 01), configuration));
+        }
+
+        [Fact]
+        public void ScheduleWeeklyConfiguration_NoWeeklyFrequencySpecified()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(6, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(2, 0, 0)
+            };
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Frequency = FrequencyType.Weekly;
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+            configuration.WeeklyFrequency = null;
+
+            Assert.Throws<ConfigurationException>(() => Schedule.GetNextExecutionTime(new DateTime(2020, 01, 01), configuration));
+        }
+
+
+        [Fact]
+        public void ScheduleMultipleExecutionTimes_NoNumberOfTimes()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(6, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(2, 0, 0)
+            };
+
+            WeeklyFrequency weeklyFreq = new WeeklyFrequency()
+            {
+                DaysOfWeek = new DayOfWeek[] { DayOfWeek.Monday },
+                Occurrence = 1
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Frequency = FrequencyType.Weekly;
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+            configuration.WeeklyFrequency = weeklyFreq;
+
+            DateTime?[] executionTimes = Schedule.GetMultipleNextExecutionTimes(new DateTime(2020, 01, 08, 04, 0, 10), configuration, 0);
+
+            executionTimes.Length.Should().Be(0);
+        }
+
+        [Fact]
+        public void ScheduleMultipleExecutionTimes_OneNumberOfTimes()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(6, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(2, 0, 0)
+            };
+
+            WeeklyFrequency weeklyFreq = new WeeklyFrequency()
+            {
+                DaysOfWeek = new DayOfWeek[] { DayOfWeek.Monday },
+                Occurrence = 1
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Frequency = FrequencyType.Weekly;
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+            configuration.WeeklyFrequency = weeklyFreq;
+
+            DateTime?[] executionTimes = Schedule.GetMultipleNextExecutionTimes(new DateTime(2020, 01, 08, 04, 0, 10), configuration, 1);
+
+            executionTimes.Length.Should().Be(1);
+        }
+
+
 
         #region Daily
         [Fact]
