@@ -7,7 +7,6 @@ namespace Scheduler
     public class WeeklyFrequency
     {
         private const string OCCURRENCE_STR = "Occurs every {0} weeks on {1} ";
-        private string description;
         private DayOfWeek[] daysOfWeek;
 
         public WeeklyFrequency()
@@ -15,51 +14,51 @@ namespace Scheduler
 
         }
 
-        public string Description
+        public string GetDescription()
         {
-            get
+            string daysOfWeekStr = "";
+            string description;
+            for (int i = 0; i < GetDaysOfWeekOrdered().Length; i++)
             {
-                if (description == null)
+                if (i == GetDaysOfWeekOrdered().Length - 1 && GetDaysOfWeekOrdered().Length > 1)
                 {
-                    string daysOfWeekStr = "";
-                    for (int i = 0; i < DaysOfWeek.Length; i++)
-                    {
-                        if (i == DaysOfWeek.Length - 1 && DaysOfWeek.Length > 1)
-                        {
-                            daysOfWeekStr = daysOfWeekStr.Remove(daysOfWeekStr.Length-2, 1);
-                            daysOfWeekStr += "and " + Enum.GetName(typeof(DayOfWeek), DaysOfWeek[i]);
-                        }
-                        else
-                        {
-                            daysOfWeekStr += Enum.GetName(typeof(DayOfWeek), DaysOfWeek[i]) + ", ";
-                        }
-                    }
-                    if(DaysOfWeek.Length == 1)
-                    {
-                        daysOfWeekStr = daysOfWeekStr.Remove(daysOfWeekStr.Length - 2, 2);
-                    }
-                    description = string.Format(OCCURRENCE_STR, Occurrence, daysOfWeekStr.ToLower());
-                    if(Occurrence == 1)
-                    {
-                        description = description.Replace("weeks", "week");
-                    }
+                    daysOfWeekStr = daysOfWeekStr.Remove(daysOfWeekStr.Length - 2, 1);
+                    daysOfWeekStr += "and " + Enum.GetName(typeof(DayOfWeek), GetDaysOfWeekOrdered()[i]);
                 }
-                return description;
+                else
+                {
+                    daysOfWeekStr += Enum.GetName(typeof(DayOfWeek), GetDaysOfWeekOrdered()[i]) + ", ";
+                }
             }
+            if (GetDaysOfWeekOrdered().Length == 1)
+            {
+                daysOfWeekStr = daysOfWeekStr.Remove(daysOfWeekStr.Length - 2, 2);
+            }
+            description = string.Format(OCCURRENCE_STR, Occurrence, daysOfWeekStr.ToLower());
+            if (Occurrence == 1)
+            {
+                description = description.Replace("weeks", "week");
+            }
+            return description;
         }
         public int Occurrence { get; set; }
         public DayOfWeek[] DaysOfWeek 
         {
             get
             {
-                return daysOfWeek;
+                return GetDaysOfWeekOrdered();
             }
             set
             {
-                daysOfWeek = value.OrderBy(D => ((int)D + 6) % 7).ToArray();
+                daysOfWeek = value;
             }
         }
 
+        public DayOfWeek[] GetDaysOfWeekOrdered()
+        {
+            return daysOfWeek.OrderBy(D => ((int)D + 6) % 7).ToArray();
+        }
+        
         public static int GetWeekOfYear(DateTime date)
         {
             DayOfWeek day = CultureInfo.InvariantCulture.Calendar.GetDayOfWeek(date);

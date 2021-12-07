@@ -41,6 +41,8 @@ namespace TestScheduler
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 01), configuration).Should().Be(new DateTime(2020, 01, 08));
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 05), configuration).Should().Be(new DateTime(2020, 01, 08));
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 10), configuration).Should().Be(new DateTime(2020, 01, 10));
+            Schedule.GetDescription(new DateTime(2020, 01, 01, 12, 55, 00), configuration).Should()
+                .Be("Occurs once. Schedule will be used on 08/01/2020 at 0:00");
         }
 
         [Fact]
@@ -315,6 +317,8 @@ namespace TestScheduler
             executionTimes[3].Should().Be(new DateTime(2020, 01, 11, 21, 15, 15));
             executionTimes[4].Should().Be(new DateTime(2020, 01, 12, 21, 15, 15));
             executionTimes[5].Should().Be(new DateTime(2020, 01, 13, 21, 15, 15));
+            Schedule.GetDescription(executionTimes[5].Value, configuration).Should()
+                .Be("Occurs everyday once at 21:15:15 starting on 08/01/2020");
         }
 
         [Fact]
@@ -341,6 +345,8 @@ namespace TestScheduler
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 01, 10, 0, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 01,0,10,0), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 01, 0, 0, 10), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
+            Schedule.GetDescription(new DateTime(2020, 01, 01, 08, 21, 15), configuration).Should()
+                .Be("Occurs everyday every 10 seconds between 04:00:00 and 08:00:00 starting on 08/01/2020");
         }
 
         [Fact]
@@ -377,6 +383,8 @@ namespace TestScheduler
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 08, 04, 10, 15), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 10, 20));
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 20, 04, 0, 10), configuration).Should().Be(new DateTime(2020, 01, 20, 4, 0, 20));
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 20, 04, 0, 25), configuration).Should().Be(new DateTime(2020, 01, 20, 4, 0, 30));
+            Schedule.GetDescription(new DateTime(2020, 01, 01, 08, 21, 15), configuration).Should()
+                .Be("Occurs everyday every 10 seconds between 04:00:00 and 08:00:00 starting on 08/01/2020");
         }
 
         [Fact]
@@ -403,6 +411,8 @@ namespace TestScheduler
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 01, 10, 0, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 01, 0, 10, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 01, 0, 0, 10), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
+            Schedule.GetDescription(new DateTime(2020, 01, 01, 08, 21, 15), configuration).Should()
+                .Be("Occurs everyday every 20 minutes between 04:00:00 and 08:00:00 starting on 08/01/2020");
         }
 
         [Fact]
@@ -438,6 +448,8 @@ namespace TestScheduler
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 08, 04, 10, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 20, 0));
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 20, 04, 0, 0), configuration).Should().Be(new DateTime(2020, 01, 20, 4, 20, 0));
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 20, 04, 0, 15), configuration).Should().Be(new DateTime(2020, 01, 20, 4, 20, 0));
+            Schedule.GetDescription(new DateTime(2020, 01, 01, 08, 21, 15), configuration).Should()
+                .Be("Occurs everyday every 20 minutes between 04:00:00 and 08:00:00 starting on 08/01/2020");
         }
 
         [Fact]
@@ -463,6 +475,8 @@ namespace TestScheduler
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 06, 10, 0, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 05, 0, 10, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 04, 0, 0, 10), configuration).Should().Be(new DateTime(2020, 01, 08, 4, 0, 0));
+            Schedule.GetDescription(new DateTime(2020, 01, 01, 08, 21, 15), configuration).Should()
+                .Be("Occurs everyday every 1 hour between 04:00:00 and 08:00:00 starting on 08/01/2020");
         }
 
         [Fact]
@@ -498,6 +512,8 @@ namespace TestScheduler
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 08, 04, 10, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 5, 0, 0));
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 20, 08, 0, 0), configuration).Should().Be(new DateTime(2020, 01, 20, 9, 0, 0));
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 20, 09, 59, 15), configuration).Should().Be(new DateTime(2020, 01, 20, 10, 0, 0));
+            Schedule.GetDescription(new DateTime(2020, 01, 01, 08, 21, 15), configuration).Should()
+                .Be("Occurs everyday every 1 hour between 04:00:00 and 10:00:00 starting on 08/01/2020");
         }
 
         [Fact]
@@ -601,6 +617,8 @@ namespace TestScheduler
             executionTimes[3].Should().Be(new DateTime(2020, 01, 08, 5, 0, 0));
             executionTimes[4].Should().Be(new DateTime(2020, 01, 08, 5, 20, 0));
             executionTimes[5].Should().Be(new DateTime(2020, 01, 08, 5, 40, 0));
+            Schedule.GetDescription(executionTimes[5].Value, configuration).Should()
+                .Be("Occurs every 1 week on monday, tuesday, wednesday, thursday, friday, saturday and sunday every 20 minutes between 04:00:00 and 08:00:00 starting on 08/01/2020");
         }
 
         [Fact]
@@ -639,6 +657,8 @@ namespace TestScheduler
             executionTimes[3].Should().Be(new DateTime(2020, 01, 09, 6, 0, 0));
             executionTimes[4].Should().Be(new DateTime(2020, 01, 10, 4, 0, 0));
             executionTimes[5].Should().Be(new DateTime(2020, 01, 10, 6, 0, 0));
+            Schedule.GetDescription(executionTimes[5].Value, configuration).Should()
+                .Be("Occurs every 1 week on monday, tuesday, wednesday, thursday, friday, saturday and sunday every 2 hours between 04:00:00 and 06:00:00 starting on 08/01/2020");
         }
 
         [Fact]
@@ -679,6 +699,8 @@ namespace TestScheduler
             executionTimes[5].Should().Be(new DateTime(2020, 01, 11, 6, 0, 0));
             executionTimes[6].Should().Be(new DateTime(2020, 01, 12, 4, 0, 0));
             executionTimes[7].Should().Be(new DateTime(2020, 01, 12, 6, 0, 0));
+            Schedule.GetDescription(executionTimes[7].Value, configuration).Should()
+                .Be("Occurs every 1 week on monday, tuesday, wednesday, friday, saturday and sunday every 2 hours between 04:00:00 and 06:00:00 starting on 08/01/2020");
         }
 
         [Fact]
@@ -718,6 +740,8 @@ namespace TestScheduler
             executionTimes[5].Should().Be(new DateTime(2020, 01, 27, 6, 0, 0));
             executionTimes[6].Should().Be(new DateTime(2020, 02, 03, 4, 0, 0));
             executionTimes[7].Should().Be(new DateTime(2020, 02, 03, 6, 0, 0));
+            Schedule.GetDescription(executionTimes[7].Value, configuration).Should()
+                .Be("Occurs every 1 week on monday every 2 hours between 04:00:00 and 06:00:00 starting on 08/01/2020");
         }
 
         [Fact]
@@ -757,6 +781,9 @@ namespace TestScheduler
             executionTimes[5].Should().Be(new DateTime(2020, 01, 28, 6, 0, 0));
             executionTimes[6].Should().Be(new DateTime(2020, 02, 04, 4, 0, 0));
             executionTimes[7].Should().Be(new DateTime(2020, 02, 04, 6, 0, 0));
+            Schedule.GetDescription(executionTimes[7].Value, configuration).Should()
+                .Be("Occurs every 1 week on tuesday every 2 hours between 04:00:00 and 06:00:00 starting on 08/01/2020");
+
         }
 
         [Fact]
@@ -796,6 +823,9 @@ namespace TestScheduler
             executionTimes[5].Should().Be(new DateTime(2020, 01, 22, 6, 0, 0));
             executionTimes[6].Should().Be(new DateTime(2020, 01, 29, 4, 0, 0));
             executionTimes[7].Should().Be(new DateTime(2020, 01, 29, 6, 0, 0));
+            Schedule.GetDescription(executionTimes[7].Value, configuration).Should()
+                .Be("Occurs every 1 week on wednesday every 2 hours between 04:00:00 and 06:00:00 starting on 08/01/2020");
+
         }
 
         [Fact]
@@ -835,6 +865,8 @@ namespace TestScheduler
             executionTimes[5].Should().Be(new DateTime(2020, 01, 23, 6, 0, 0));
             executionTimes[6].Should().Be(new DateTime(2020, 01, 30, 4, 0, 0));
             executionTimes[7].Should().Be(new DateTime(2020, 01, 30, 6, 0, 0));
+            Schedule.GetDescription(executionTimes[7].Value, configuration).Should()
+                .Be("Occurs every 1 week on thursday every 2 hours between 04:00:00 and 06:00:00 starting on 08/01/2020");
         }
 
         [Fact]
@@ -874,6 +906,8 @@ namespace TestScheduler
             executionTimes[5].Should().Be(new DateTime(2020, 01, 24, 6, 0, 0));
             executionTimes[6].Should().Be(new DateTime(2020, 01, 31, 4, 0, 0));
             executionTimes[7].Should().Be(new DateTime(2020, 01, 31, 6, 0, 0));
+            Schedule.GetDescription(executionTimes[7].Value, configuration).Should()
+                .Be("Occurs every 1 week on friday every 2 hours between 04:00:00 and 06:00:00 starting on 08/01/2020");
         }
 
         [Fact]
@@ -913,6 +947,8 @@ namespace TestScheduler
             executionTimes[5].Should().Be(new DateTime(2020, 01, 25, 6, 0, 0));
             executionTimes[6].Should().Be(new DateTime(2020, 02, 01, 4, 0, 0));
             executionTimes[7].Should().Be(new DateTime(2020, 02, 01, 6, 0, 0));
+            Schedule.GetDescription(executionTimes[7].Value, configuration).Should()
+                .Be("Occurs every 1 week on saturday every 2 hours between 04:00:00 and 06:00:00 starting on 08/01/2020");
         }
 
         [Fact]
@@ -952,6 +988,8 @@ namespace TestScheduler
             executionTimes[5].Should().Be(new DateTime(2020, 01, 26, 6, 0, 0));
             executionTimes[6].Should().Be(new DateTime(2020, 02, 02, 4, 0, 0));
             executionTimes[7].Should().Be(new DateTime(2020, 02, 02, 6, 0, 0));
+            Schedule.GetDescription(executionTimes[7].Value, configuration).Should()
+                .Be("Occurs every 1 week on sunday every 2 hours between 04:00:00 and 06:00:00 starting on 08/01/2020");
         }
 
         [Fact]
@@ -991,6 +1029,8 @@ namespace TestScheduler
             executionTimes[5].Should().Be(new DateTime(2020, 03, 09, 6, 0, 0));
             executionTimes[6].Should().Be(new DateTime(2020, 03, 30, 4, 0, 0));
             executionTimes[7].Should().Be(new DateTime(2020, 03, 30, 6, 0, 0));
+            Schedule.GetDescription(executionTimes[7].Value, configuration).Should()
+                .Be("Occurs every 3 weeks on monday every 2 hours between 04:00:00 and 06:00:00 starting on 08/01/2020");
         }
 
         [Fact]
@@ -1030,119 +1070,13 @@ namespace TestScheduler
             executionTimes[5].Should().Be(new DateTime(2020, 02, 09, 6, 0, 0));
             executionTimes[6].Should().Be(new DateTime(2020, 02, 23, 4, 0, 0));
             executionTimes[7].Should().Be(new DateTime(2020, 02, 23, 6, 0, 0));
+            Schedule.GetDescription(executionTimes[7].Value, configuration).Should()
+                .Be("Occurs every 2 weeks on sunday every 2 hours between 04:00:00 and 06:00:00 starting on 08/01/2020");
         }
 
 
         #endregion
         #region Descriptions
-        [Fact]
-        public void Schedule_Description_Once()
-        {
-            DateTime dateTime = new DateTime(2020, 01, 08,12,55,15);
-
-
-            SchedulerConfiguration configuration = new SchedulerConfiguration();
-            configuration.Type = SchedulerType.Once;
-            configuration.DateTimeOnce = dateTime;
-
-
-            Schedule.GetDescription(new DateTime(2020, 01, 01,08,21,15), configuration).Should()
-                .Be("Occurs once. Schedule will be used on 08/01/2020 at 12:55");
-        }
-
-        [Fact]
-        public void Schedule_Description_Recurring_Daily_NonRecurring()
-        {
-            DateTime startDate = new DateTime(2020, 01, 08);
-            DailyFrequency dailyFreq = new DailyFrequency()
-            {
-                IsRecurring = false,
-                Occurrence = new TimeSpan(21, 15, 15)
-            };
-
-
-            SchedulerConfiguration configuration = new SchedulerConfiguration();
-            configuration.Type = SchedulerType.Recurring;
-            configuration.StartDate = startDate;
-            configuration.DailyFrequency = dailyFreq;
-
-
-
-            Schedule.GetDescription(new DateTime(2020, 01, 01, 08, 21, 15), configuration).Should()
-                .Be("Occurs everyday once at 21:15:15 starting on 08/01/2020");
-        }
-
-        [Fact]
-        public void Schedule_Description_Recurring_Daily_WithSeconds()
-        {
-            DateTime startDate = new DateTime(2020, 01, 08);
-            DailyFrequency dailyFreq = new DailyFrequency()
-            {
-                StartTime = new TimeSpan(4, 0, 0),
-                EndTime = new TimeSpan(8, 0, 0),
-                IsRecurring = true,
-                Occurrence = new TimeSpan(0, 0, 10)
-            };
-
-
-            SchedulerConfiguration configuration = new SchedulerConfiguration();
-            configuration.Type = SchedulerType.Recurring;
-            configuration.StartDate = startDate;
-            configuration.DailyFrequency = dailyFreq;
-
-
-
-            Schedule.GetDescription(new DateTime(2020, 01, 01, 08, 21, 15), configuration).Should()
-                .Be("Occurs everyday every 10 seconds between 04:00:00 and 08:00:00 starting on 08/01/2020");
-        }
-
-        [Fact]
-        public void Schedule_Description_Recurring_Daily_WithMinutes()
-        {
-            DateTime startDate = new DateTime(2020, 01, 08);
-            DailyFrequency dailyFreq = new DailyFrequency()
-            {
-                StartTime = new TimeSpan(4, 0, 0),
-                EndTime = new TimeSpan(8, 0, 0),
-                IsRecurring = true,
-                Occurrence = new TimeSpan(0, 20, 0)
-            };
-
-
-            SchedulerConfiguration configuration = new SchedulerConfiguration();
-            configuration.Type = SchedulerType.Recurring;
-            configuration.StartDate = startDate;
-            configuration.DailyFrequency = dailyFreq;
-
-
-            Schedule.GetDescription(new DateTime(2020, 01, 01, 08, 21, 15), configuration).Should()
-                .Be("Occurs everyday every 20 minutes between 04:00:00 and 08:00:00 starting on 08/01/2020");
-        }
-
-
-        [Fact]
-        public void Schedule_Description_Recurring_Daily_WithHours()
-        {
-            DateTime startDate = new DateTime(2020, 01, 08);
-            DailyFrequency dailyFreq = new DailyFrequency()
-            {
-                StartTime = new TimeSpan(4, 0, 0),
-                EndTime = new TimeSpan(8, 0, 0),
-                IsRecurring = true,
-                Occurrence = new TimeSpan(1, 0, 0)
-            };
-
-
-            SchedulerConfiguration configuration = new SchedulerConfiguration();
-            configuration.Type = SchedulerType.Recurring;
-            configuration.StartDate = startDate;
-            configuration.DailyFrequency = dailyFreq;
-
-
-            Schedule.GetDescription(new DateTime(2020, 01, 01, 08, 21, 15), configuration).Should()
-                .Be("Occurs everyday every 1 hour between 04:00:00 and 08:00:00 starting on 08/01/2020");
-        }
-
         [Fact]
         public void Schedule_Description_NotOccurring()
         {
@@ -1164,37 +1098,6 @@ namespace TestScheduler
 
             Schedule.GetDescription(new DateTime(2020, 03, 01, 08, 21, 15), configuration).Should()
                 .Be("Will not occur. Schedule will end on 01/02/2020");
-        }
-
-        [Fact]
-        public void Schedule_Description_Recurring_Weekly_OnlyOneDay()
-        {
-            DateTime startDate = new DateTime(2020, 01, 08);
-            DailyFrequency dailyFreq = new DailyFrequency()
-            {
-                StartTime = new TimeSpan(4, 0, 0),
-                EndTime = new TimeSpan(6, 0, 0),
-                IsRecurring = true,
-                Occurrence = new TimeSpan(2, 0, 0)
-            };
-
-            WeeklyFrequency weeklyFreq = new WeeklyFrequency()
-            {
-                DaysOfWeek = new DayOfWeek[] { DayOfWeek.Monday },
-                Occurrence = 1
-            };
-
-
-            SchedulerConfiguration configuration = new SchedulerConfiguration();
-            configuration.Frequency = FrequencyType.Weekly;
-            configuration.Type = SchedulerType.Recurring;
-            configuration.StartDate = startDate;
-            configuration.DailyFrequency = dailyFreq;
-            configuration.WeeklyFrequency = weeklyFreq;
-
-
-            Schedule.GetDescription(new DateTime(2020, 03, 01, 08, 21, 15), configuration).Should()
-                .Be("Occurs every 1 week on monday every 2 hours between 04:00:00 and 06:00:00 starting on 08/01/2020");
         }
 
         [Fact]

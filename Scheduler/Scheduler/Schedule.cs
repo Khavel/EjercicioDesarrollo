@@ -36,11 +36,7 @@ namespace Scheduler
             {
                 throw new ConfigurationException("No daily frequency was specified");
             }
-            if (configuration.Type == SchedulerType.Recurring && configuration.Frequency == FrequencyType.Weekly &&
-                configuration.WeeklyFrequency == null)
-            {
-                throw new ConfigurationException("No weekly frequency was specified");
-            }
+
             #endregion
             DateTime dateTimeAux = currentDate;
 
@@ -52,61 +48,49 @@ namespace Scheduler
             switch (configuration.Frequency)
             {
                 case FrequencyType.Daily:
-                    dateTimeAux = getNextDateDaily(dateTimeAux, configuration);
-                    break;
+                    return getNextExecutionTimeDaily(dateTimeAux, configuration);
+
                 case FrequencyType.Weekly:
-                    dateTimeAux = getNextDateWeekly(dateTimeAux, configuration);
-                    break;
+                    return getNextExecutionTimeWeekly(dateTimeAux, configuration);
+
+                default:
+                    throw new ConfigurationException("No valid frequncy was specified");
             }
 
-            //This part determines the next date of execution
-            DateTime returnDate = dateTimeAux;
-            //returnDate = addInterval(dateTimeAux, configuration);
+            
+        }
+
+        private static DateTime? getNextExecutionTimeDaily(DateTime initialDate, SchedulerConfiguration configuration)
+        {
+            DateTime returnDate;
+            if (initialDate.Date >= configuration.StartDate.Date)
+            {
+                returnDate = initialDate;
+            }
+            else
+            {
+                returnDate = initialDate.AddDays(1);
+            }
+
             if (returnDate >= configuration.EndDate)
             {
                 return null;
             }
             else
             {
-                //This part determines the next time of execution, for daily frequency configurations
                 if (configuration.DailyFrequency?.IsRecurring == false)
                 {
                     if (returnDate.TimeOfDay >= configuration.DailyFrequency?.Occurrence)
                     {
-                        return GetNextExecutionTime(dateTimeAux.Date.AddDays(1), configuration);
+                        return GetNextExecutionTime(returnDate.Date.AddDays(1), configuration);
                     }
-
                     return returnDate.Date + configuration.DailyFrequency?.Occurrence;
                 }
                 else
                 {
-                    //If the current time is higher than the end time, move to next date of execution
-                    if (returnDate.TimeOfDay >= configuration.DailyFrequency?.EndTime)
-                    {
-                        return GetNextExecutionTime(dateTimeAux.Date.AddDays(1), configuration);
-                    }
-                    else if (returnDate.TimeOfDay < configuration.DailyFrequency?.StartTime)
-                    {
-                        return returnDate.Date + configuration.DailyFrequency?.StartTime;
-                    }
-                    else
-                    {
-                        return getNextTimeDaily(returnDate, configuration);
-                    }
+                    return getNextTimeDaily(returnDate, configuration);
                 }
 
-            }
-        }
-
-        private static DateTime getNextDateDaily(DateTime initialDate, SchedulerConfiguration configuration)
-        {
-            if (initialDate.Date >= configuration.StartDate.Date)
-            {
-                return initialDate;
-            }
-            else
-            {
-                return initialDate.AddDays(1);
             }
 
         }
@@ -151,25 +135,40 @@ namespace Scheduler
 
         private static DateTime? getNextTimeDaily(DateTime theDate, SchedulerConfiguration configuration)
         {
-            return theDate.Date + configuration.DailyFrequency.DailyExecutionTimes.First(T => T > theDate.TimeOfDay);
+            if (theDate.TimeOfDay >= configuration.DailyFrequency?.EndTime)
+            {
+                return GetNextExecutionTime(theDate.Date.AddDays(1), configuration);
+            }
+            else if (theDate.TimeOfDay < configuration.DailyFrequency?.StartTime)
+            {
+                return theDate.Date + configuration.DailyFrequency?.StartTime;
+            }
+            else
+            {
+                return theDate.Date + configuration.DailyFrequency.GetDailyExecutionTimes().First(T => T > theDate.TimeOfDay);
+            }
         }
 
-        private static DateTime getNextDateWeekly(DateTime theDate, SchedulerConfiguration configuration)
+        private static DateTime? getNextExecutionTimeWeekly(DateTime theDate, SchedulerConfiguration configuration)
         {
-
+            if (configuration.Type == SchedulerType.Recurring && configuration.Frequency == FrequencyType.Weekly &&
+                configuration.WeeklyFrequency == null)
+            {
+                throw new ConfigurationException("No weekly frequency was specified");
+            }
             if (configuration.WeeklyFrequency.Occurrence <= 0)
             {
                 throw new ConfigurationException("Incorrect weekly frequency");
             }
 
-            if (configuration.WeeklyFrequency.DaysOfWeek == null || configuration.WeeklyFrequency.DaysOfWeek.Length == 0)
+            if (configuration.WeeklyFrequency.GetDaysOfWeekOrdered() == null || configuration.WeeklyFrequency.GetDaysOfWeekOrdered().Length == 0)
             {
                 throw new ConfigurationException("No valid day of the week was indicated");
             }
 
-            if (configuration.WeeklyFrequency.DaysOfWeek.Any(T => T == theDate.DayOfWeek))
+            if (configuration.WeeklyFrequency.GetDaysOfWeekOrdered().Any(T => T == theDate.DayOfWeek))
             {
-                return theDate;
+                return getNextTimeDaily(theDate,configuration);
             }
 
             int weekOfYearStart = WeeklyFrequency.GetWeekOfYear(configuration.StartDate);
@@ -179,14 +178,14 @@ namespace Scheduler
             while (counter < 365)
             {
                 theDateAux = theDateAux.AddDays(1);
-                if (configuration.WeeklyFrequency.DaysOfWeek.Any(T => T == theDateAux.DayOfWeek)
+                if (configuration.WeeklyFrequency.GetDaysOfWeekOrdered().Any(T => T == theDateAux.DayOfWeek)
                     && (WeeklyFrequency.GetWeekOfYear(theDateAux) - weekOfYearStart) % configuration.WeeklyFrequency.Occurrence == 0)
                 {
-                    return theDateAux;
+                    return getNextTimeDaily(theDateAux,configuration);
                 }
                 counter++;
             }
-            return getNextDateWeekly(theDateAux, configuration);
+            return getNextExecutionTimeWeekly(theDateAux, configuration);
         }
 
         public static string GetDescription(DateTime currentDate, SchedulerConfiguration configuration)
@@ -207,9 +206,9 @@ namespace Scheduler
                 switch (configuration.Frequency)
                 {
                     case FrequencyType.Daily:
-                        return $"Occurs everyday {configuration.DailyFrequency.Description} starting on {configuration.StartDate.ToString("dd/MM/yyyy")}";
+                        return $"Occurs everyday {configuration.DailyFrequency.GetDescription()} starting on {configuration.StartDate.ToString("dd/MM/yyyy")}";
                     case FrequencyType.Weekly:
-                        return configuration.WeeklyFrequency.Description + configuration.DailyFrequency.Description +
+                        return configuration.WeeklyFrequency.GetDescription() + configuration.DailyFrequency.GetDescription() +
                             $" starting on {configuration.StartDate.ToString("dd/MM/yyyy")}";
                     default:
                         throw new ScheduleException("No valid frequency was specified");

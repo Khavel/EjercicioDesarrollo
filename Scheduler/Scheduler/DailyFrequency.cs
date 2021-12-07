@@ -5,10 +5,8 @@ namespace Scheduler
 {
     public class DailyFrequency
     {
-        private TimeSpan[] dailyExecutionTimes;
         private const string OCCURRENCE_STR_RECURRING = "every {0} {1} between {2} and {3}";
         private const string OCCURRENCE_STR_ONCE = "once at {0}";
-        private string description;
 
         public DailyFrequency()
         {
@@ -19,55 +17,46 @@ namespace Scheduler
         public bool IsRecurring { get; set; }
         public TimeSpan? StartTime { get; set; }
         public TimeSpan? EndTime { get; set; }
-        public TimeSpan[] DailyExecutionTimes
+
+        public TimeSpan[] GetDailyExecutionTimes()
         {
-            get
+            List<TimeSpan> executionTimesAux = new List<TimeSpan>();
+            for (var ts = StartTime; ts <= EndTime; ts += Occurrence)
             {
-                if (dailyExecutionTimes == null)
-                {
-                    List<TimeSpan> executionTimesAux = new List<TimeSpan>();
-                    for (var ts = StartTime; ts <= EndTime; ts += Occurrence)
-                    {
-                        executionTimesAux.Add(ts.Value);
-                    }
-                    dailyExecutionTimes = executionTimesAux.ToArray();
-                }
-                return dailyExecutionTimes;
+                executionTimesAux.Add(ts.Value);
             }
+            return executionTimesAux.ToArray();
         }
-        public string Description
+
+        public string GetDescription()
         {
-            get
+            string description;
+            if (IsRecurring == false)
             {
-                if (description == null)
-                {
-                    if(IsRecurring == false)
-                    {
-                        description = string.Format(OCCURRENCE_STR_ONCE, Occurrence.ToString(@"hh\:mm\:ss"));
-                    }
-                    else
-                    {
-                        string timeStr = "seconds";
-                        int timePart = Occurrence.Seconds;
-                        if(Occurrence.Hours != 0)
-                        {
-                            timeStr = "hours";
-                            timePart = Occurrence.Hours;
-                        }else if(Occurrence.Minutes != 0)
-                        {
-                            timeStr = "minutes";
-                            timePart = Occurrence.Minutes;
-                        }
-                        if(timePart == 1)
-                        {
-                            timeStr = timeStr.Substring(0, timeStr.Length - 1);
-                        }
-                        description = string.Format(OCCURRENCE_STR_RECURRING, timePart, timeStr,
-                            StartTime.Value.ToString(@"hh\:mm\:ss"), EndTime.Value.ToString(@"hh\:mm\:ss"));
-                    }
-                }
-                return description;
+                description = string.Format(OCCURRENCE_STR_ONCE, Occurrence.ToString(@"hh\:mm\:ss"));
             }
+            else
+            {
+                string timeStr = "seconds";
+                int timePart = Occurrence.Seconds;
+                if (Occurrence.Hours != 0)
+                {
+                    timeStr = "hours";
+                    timePart = Occurrence.Hours;
+                }
+                else if (Occurrence.Minutes != 0)
+                {
+                    timeStr = "minutes";
+                    timePart = Occurrence.Minutes;
+                }
+                if (timePart == 1)
+                {
+                    timeStr = timeStr.Substring(0, timeStr.Length - 1);
+                }
+                description = string.Format(OCCURRENCE_STR_RECURRING, timePart, timeStr,
+                    StartTime.Value.ToString(@"hh\:mm\:ss"), EndTime.Value.ToString(@"hh\:mm\:ss"));
+            }
+            return description;
         }
 
     }
