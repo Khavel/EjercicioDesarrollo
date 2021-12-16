@@ -53,6 +53,9 @@ namespace Scheduler
                 case FrequencyType.Weekly:
                     return getNextExecutionTimeWeekly(dateTimeAux, configuration);
 
+                case FrequencyType.Monthly:
+                    return getNextExecutionTimeMonthly(dateTimeAux, configuration);
+
                 default:
                     throw new ConfigurationException("No valid frequncy was specified");
             }
@@ -188,6 +191,50 @@ namespace Scheduler
             return getNextExecutionTimeWeekly(theDateAux, configuration);
         }
 
+        private static DateTime? getNextExecutionTimeMonthly(DateTime theDate, SchedulerConfiguration configuration)
+        {
+            if (configuration.Type == SchedulerType.Recurring && configuration.Frequency == FrequencyType.Monthly &&
+                configuration.MonthlyFrequency == null)
+            {
+                throw new ConfigurationException("No monthly frequency was specified");
+            }
+            if (configuration.MonthlyFrequency.IsDaily && configuration.MonthlyFrequency.DayNumber <= 0)
+            {
+                throw new ConfigurationException("The specified day of execution is invalid");
+            }
+            if (configuration.MonthlyFrequency.Interval <= 0)
+            {
+                throw new ConfigurationException("The specified monthly interval is invalid");
+            }
+            if (configuration.MonthlyFrequency.IsDaily == false && configuration.MonthlyFrequency.Frequency.HasValue == false)
+            {
+                throw new ConfigurationException("No frequency of execution was specified");
+            }
+            if (configuration.MonthlyFrequency.IsDaily == false && configuration.MonthlyFrequency.DayType.HasValue == false)
+            {
+                throw new ConfigurationException("No day type was specified");
+            }
+
+            if (theDate < configuration.StartDate)
+            {
+                theDate = configuration.StartDate;
+            }
+            DateTime? nextDate = configuration.MonthlyFrequency.GetExecutionDates(configuration.StartDate)
+                .FirstOrDefault(T => T >= theDate.Date);
+            if(nextDate.HasValue == false)
+            {
+                return null;
+            }
+            if(nextDate.Value == theDate.Date)
+            {
+                return getNextTimeDaily(theDate, configuration);
+            }
+            else
+            {
+                return getNextTimeDaily(nextDate.Value, configuration);
+            }
+        }
+
         public static string GetDescription(DateTime currentDate, SchedulerConfiguration configuration)
         {
             DateTime? nextExecution = GetNextExecutionTime(currentDate, configuration);
@@ -210,18 +257,13 @@ namespace Scheduler
                     case FrequencyType.Weekly:
                         return configuration.WeeklyFrequency.GetDescription() + configuration.DailyFrequency.GetDescription() +
                             $" starting on {configuration.StartDate.ToString("dd/MM/yyyy")}";
+                    case FrequencyType.Monthly:
+                        return configuration.MonthlyFrequency.GetDescription() + configuration.DailyFrequency.GetDescription() +
+                            $" starting on {configuration.StartDate.ToString("dd/MM/yyyy")}";
                     default:
                         throw new ScheduleException("No valid frequency was specified");
                 }
             }
-        }
-    }
-
-    public class ScheduleException : Exception
-    {
-        public ScheduleException(string message)
-            : base(message)
-        {
         }
     }
 

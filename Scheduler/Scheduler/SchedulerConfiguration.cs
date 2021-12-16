@@ -15,26 +15,10 @@ namespace Scheduler
         public FrequencyType Frequency { get; set; }
         public DailyFrequency DailyFrequency { get; set; }
         public WeeklyFrequency WeeklyFrequency { get; set; }
+        public MonthlyFrequency MonthlyFrequency { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         #endregion
     }
 
-    public enum SchedulerType
-    {
-        Once,
-        Recurring
-    }
-    public enum FrequencyType
-    {
-        Daily,
-        Weekly
-    }
-    public class ConfigurationException : Exception
-    {
-        public ConfigurationException(string message)
-            : base(message)
-        {
-        }
-    }
 }
