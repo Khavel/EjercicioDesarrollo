@@ -3092,6 +3092,98 @@ namespace TestScheduler
                 .Be("Occurs the Last WeekendDay of every 1 month every 1 hour between 03:00:00 and 06:00:00 starting on 01/01/2020");
         }
 
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Monthly_Daily_ChangeYear()
+        {
+            DateTime startDate = new DateTime(2020, 11, 01);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(3, 0, 0),
+                EndTime = new TimeSpan(6, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(1, 0, 0)
+            };
+
+            MonthlyFrequency monthlyFreq = new MonthlyFrequency()
+            {
+                IsDaily = true,
+                DayNumber = 1,
+                Interval = 1
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Frequency = FrequencyType.Monthly;
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+            configuration.MonthlyFrequency = monthlyFreq;
+
+
+            DateTime?[] executionTimes = Schedule.GetMultipleNextExecutionTimes(new DateTime(2020, 01, 01), configuration, 12);
+
+            executionTimes[0].Should().Be(new DateTime(2020, 11, 01, 3, 0, 0));
+            executionTimes[1].Should().Be(new DateTime(2020, 11, 01, 4, 0, 0));
+            executionTimes[2].Should().Be(new DateTime(2020, 11, 01, 5, 0, 0));
+            executionTimes[3].Should().Be(new DateTime(2020, 11, 01, 6, 0, 0));
+            executionTimes[4].Should().Be(new DateTime(2020, 12, 01, 3, 0, 0));
+            executionTimes[5].Should().Be(new DateTime(2020, 12, 01, 4, 0, 0));
+            executionTimes[6].Should().Be(new DateTime(2020, 12, 01, 5, 0, 0));
+            executionTimes[7].Should().Be(new DateTime(2020, 12, 01, 6, 0, 0));
+            executionTimes[8].Should().Be(new DateTime(2021, 01, 01, 3, 0, 0));
+            executionTimes[9].Should().Be(new DateTime(2021, 01, 01, 4, 0, 0));
+            executionTimes[10].Should().Be(new DateTime(2021, 01, 01, 5, 0, 0));
+            executionTimes[11].Should().Be(new DateTime(2021, 01, 01, 6, 0, 0));
+            Schedule.GetDescription(executionTimes[5].Value, configuration).Should()
+                .Be("Occurs the 1 of every 1 month every 1 hour between 03:00:00 and 06:00:00 starting on 01/11/2020");
+        }
+
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Monthly_Recurring_ChangeYear()
+        {
+            DateTime startDate = new DateTime(2020, 11, 01);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(3, 0, 0),
+                EndTime = new TimeSpan(6, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(1, 0, 0)
+            };
+
+            MonthlyFrequency monthlyFreq = new MonthlyFrequency()
+            {
+                IsDaily = false,
+                Interval = 1,
+                Frequency = MonthlyFrequencyType.First,
+                DayType = MonthlyDayType.WeekendDay
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Frequency = FrequencyType.Monthly;
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+            configuration.MonthlyFrequency = monthlyFreq;
+
+
+            DateTime?[] executionTimes = Schedule.GetMultipleNextExecutionTimes(new DateTime(2020, 01, 01), configuration, 12);
+
+            executionTimes[0].Should().Be(new DateTime(2020, 11, 01, 3, 0, 0));
+            executionTimes[1].Should().Be(new DateTime(2020, 11, 01, 4, 0, 0));
+            executionTimes[2].Should().Be(new DateTime(2020, 11, 01, 5, 0, 0));
+            executionTimes[3].Should().Be(new DateTime(2020, 11, 01, 6, 0, 0));
+            executionTimes[4].Should().Be(new DateTime(2020, 12, 05, 3, 0, 0));
+            executionTimes[5].Should().Be(new DateTime(2020, 12, 05, 4, 0, 0));
+            executionTimes[6].Should().Be(new DateTime(2020, 12, 05, 5, 0, 0));
+            executionTimes[7].Should().Be(new DateTime(2020, 12, 05, 6, 0, 0));
+            executionTimes[8].Should().Be(new DateTime(2021, 01, 02, 3, 0, 0));
+            executionTimes[9].Should().Be(new DateTime(2021, 01, 02, 4, 0, 0));
+            executionTimes[10].Should().Be(new DateTime(2021, 01, 02, 5, 0, 0));
+            executionTimes[11].Should().Be(new DateTime(2021, 01, 02, 6, 0, 0));
+            Schedule.GetDescription(executionTimes[5].Value, configuration).Should()
+                .Be("Occurs the First WeekendDay of every 1 month every 1 hour between 03:00:00 and 06:00:00 starting on 01/11/2020");
+        }
 
         #endregion
         #region Descriptions

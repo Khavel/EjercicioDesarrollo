@@ -27,13 +27,19 @@ namespace Scheduler
             {
                 int month = startDate.Month;
                 int cont = 0;
-                while(month < 13)
+                int yearsToAdd = 0;
+                while (cont < 24)
                 {
-                    if((cont % Interval == 0) && (DateTime.DaysInMonth(startDate.Year, month) >= DayNumber))
+                    if ((cont % Interval == 0) && (DateTime.DaysInMonth(startDate.Year + yearsToAdd, month) >= DayNumber))
                     {
-                        theDates.Add(new DateTime(startDate.Year, month, DayNumber));
+                        theDates.Add(new DateTime(startDate.Year + yearsToAdd, month, DayNumber));
                     }
                     month++;
+                    if (month == 13)
+                    {
+                        month = 1;
+                        yearsToAdd++;
+                    }
                     cont++;
                 }
                 return theDates.ToArray();
@@ -42,13 +48,19 @@ namespace Scheduler
             {
                 int month = startDate.Month;
                 int cont = 0;
-                while (month < 13)
+                int yearsToAdd = 0;
+                while (cont < 24)
                 {
-                    if ((cont % Interval == 0) && (GetDayInMonth(month, startDate.Year).HasValue))
+                    if ((cont % Interval == 0) && (GetDayInMonth(month, startDate.Year + yearsToAdd).HasValue))
                     {
-                        theDates.Add(GetDayInMonth(month, startDate.Year).Value);
+                        theDates.Add(GetDayInMonth(month, startDate.Year + yearsToAdd).Value);
                     }
                     month++;
+                    if (month == 13)
+                    {
+                        month = 1;
+                        yearsToAdd++;
+                    }
                     cont++;
                 }
                 return theDates.ToArray();
