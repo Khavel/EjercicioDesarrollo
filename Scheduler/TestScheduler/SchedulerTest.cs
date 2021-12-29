@@ -7,6 +7,7 @@ namespace TestScheduler
 {
     public class SchedulerTest
     {
+        #region Validations
         [Fact]
         public void Schedule_DateTimeOnceNullValidation()
         {
@@ -425,9 +426,7 @@ namespace TestScheduler
 
             executionTimes.Length.Should().Be(1);
         }
-
-
-
+        #endregion
         #region Daily
         [Fact]
         public void ScheduleNextExecution_Recurring_Daily_NonRecurring()
@@ -687,6 +686,8 @@ namespace TestScheduler
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 31, 12, 10, 0), configuration).Should().Be(new DateTime(2020, 02, 01, 4, 0, 0));
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 20, 14, 55, 0), configuration).Should().Be(new DateTime(2020, 01, 21, 4, 0, 0));
             Schedule.GetNextExecutionTime(new DateTime(2020, 01, 20, 08, 0, 01), configuration).Should().Be(new DateTime(2020, 01, 21, 4, 0, 0));
+            Schedule.GetDescription(new DateTime(2020, 01, 01, 08, 21, 15), configuration).Should()
+                .Be("Occurs everyday every 1 hour between 04:00:00 and 08:00:00 starting on 08/01/2020");
         }
 
         [Fact]
@@ -716,6 +717,8 @@ namespace TestScheduler
             executionTimes[3].Should().Be(null);
             executionTimes[4].Should().Be(null);
             executionTimes[5].Should().Be(null);
+            Schedule.GetDescription(new DateTime(2020, 01, 01, 08, 21, 15), configuration).Should()
+                .Be("Occurs everyday every 1 hour between 04:00:00 and 08:00:00 starting on 08/01/2020");
         }
         #endregion
         #region Weekly
@@ -3331,6 +3334,39 @@ namespace TestScheduler
             configuration.StartDate = startDate;
             configuration.DailyFrequency = dailyFreq;
             configuration.WeeklyFrequency = weeklyFreq;
+
+
+            Schedule.GetDescription(new DateTime(2020, 03, 01, 08, 21, 15), configuration).Should()
+                .Be("Occurs every 3 weeks on monday, tuesday, wednesday, friday, saturday and sunday every 50 minutes between 04:00:00 and 06:00:00 starting on 08/01/2020");
+        }
+
+        [Fact]
+        public void Schedule_Description_Recurring_Weekly_EverydayThreeWeeks_Spanish()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(6, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(0, 50, 0)
+            };
+
+            WeeklyFrequency weeklyFreq = new WeeklyFrequency()
+            {
+                DaysOfWeek = new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Wednesday,
+                        DayOfWeek.Tuesday,DayOfWeek.Friday,DayOfWeek.Saturday,DayOfWeek.Sunday },
+                Occurrence = 3
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Frequency = FrequencyType.Weekly;
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+            configuration.WeeklyFrequency = weeklyFreq;
+            configuration.Culture = "ES_ES";
 
 
             Schedule.GetDescription(new DateTime(2020, 03, 01, 08, 21, 15), configuration).Should()

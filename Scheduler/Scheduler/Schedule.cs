@@ -1,15 +1,17 @@
 using System;
 using System.Linq;
+using System.Threading;
 
 namespace Scheduler
 {
     public static class Schedule
     {
-        private const string ONCE_OCCURRENCE = "Occurs once. Schedule will be used on {0} at {1}";
-        private const string DATE_OVER_END = "Will not occur. Schedule will end on {0}";
-
+        private static TextManager textManager;
         public static DateTime? GetNextExecutionTime(DateTime currentDate, SchedulerConfiguration configuration)
         {
+            string culture = string.IsNullOrEmpty(configuration.Culture) ? "EN-US" : configuration.Culture;
+            textManager = new TextManager(culture);
+            Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);
             if (configuration.Type == SchedulerType.Once)
             {
                 return GetNextExecutionTimeOnce(currentDate, configuration);
@@ -22,19 +24,19 @@ namespace Scheduler
             #region Validations
             if (configuration.StartDate.Date == DateTime.MaxValue.Date)
             {
-                throw new ConfigurationException("The specified start date is not valid");
+                throw new ConfigurationException(textManager.GetText("INVALID_STARTDATE"));
             }
             if (configuration.EndDate?.Date == DateTime.MaxValue.Date)
             {
-                throw new ConfigurationException("The specified end date is not valid");
+                throw new ConfigurationException(textManager.GetText("INVALID_ENDDATE"));
             }
             if (configuration.EndDate.HasValue && configuration.StartDate >= configuration.EndDate)
             {
-                throw new ConfigurationException("The end date must come after the start date");
+                throw new ConfigurationException(textManager.GetText("END_DATE_AFTER_START"));
             }
             if (configuration.Type == SchedulerType.Recurring && configuration.DailyFrequency == null)
             {
-                throw new ConfigurationException("No daily frequency was specified");
+                throw new ConfigurationException(textManager.GetText("NO_DAILY_FREQUENCY"));
             }
 
             #endregion
@@ -57,7 +59,7 @@ namespace Scheduler
                     return getNextExecutionTimeMonthly(dateTimeAux, configuration);
 
                 default:
-                    throw new ConfigurationException("No valid frequncy was specified");
+                    throw new ConfigurationException(textManager.GetText("NO_VALID_FREQUENCY"));
             }
 
             
@@ -148,7 +150,7 @@ namespace Scheduler
             }
             else
             {
-                return theDate.Date + configuration.DailyFrequency.GetDailyExecutionTimes().First(T => T > theDate.TimeOfDay);
+                return theDate.Date + Calculator.GetDailyExecutionTimes(configuration.DailyFrequency).First(T => T > theDate.TimeOfDay);
             }
         }
 
@@ -157,32 +159,32 @@ namespace Scheduler
             if (configuration.Type == SchedulerType.Recurring && configuration.Frequency == FrequencyType.Weekly &&
                 configuration.WeeklyFrequency == null)
             {
-                throw new ConfigurationException("No weekly frequency was specified");
+                throw new ConfigurationException(textManager.GetText("NO_WEEKLY_FREQUENCY"));
             }
             if (configuration.WeeklyFrequency.Occurrence <= 0)
             {
-                throw new ConfigurationException("Incorrect weekly frequency");
+                throw new ConfigurationException(textManager.GetText("INCORRECT_WEEKLY_FREQUENCY"));
             }
 
-            if (configuration.WeeklyFrequency.GetDaysOfWeekOrdered() == null || configuration.WeeklyFrequency.GetDaysOfWeekOrdered().Length == 0)
+            if (configuration.WeeklyFrequency.DaysOfWeek == null || configuration.WeeklyFrequency.DaysOfWeek.Length == 0)
             {
-                throw new ConfigurationException("No valid day of the week was indicated");
+                throw new ConfigurationException(textManager.GetText("NO_VALID_WEEKDAY"));
             }
 
-            if (configuration.WeeklyFrequency.GetDaysOfWeekOrdered().Any(T => T == theDate.DayOfWeek))
+            if (configuration.WeeklyFrequency.DaysOfWeek.Any(T => T == theDate.DayOfWeek))
             {
                 return getNextTimeDaily(theDate,configuration);
             }
 
-            int weekOfYearStart = WeeklyFrequency.GetWeekOfYear(configuration.StartDate);
+            int weekOfYearStart = Calculator.GetWeekOfYear(configuration.StartDate);
 
             DateTime theDateAux = theDate;
             int counter = 0;
             while (counter < 365)
             {
                 theDateAux = theDateAux.AddDays(1);
-                if (configuration.WeeklyFrequency.GetDaysOfWeekOrdered().Any(T => T == theDateAux.DayOfWeek)
-                    && (WeeklyFrequency.GetWeekOfYear(theDateAux) - weekOfYearStart) % configuration.WeeklyFrequency.Occurrence == 0)
+                if (configuration.WeeklyFrequency.DaysOfWeek.Any(T => T == theDateAux.DayOfWeek)
+                    && (Calculator.GetWeekOfYear(theDateAux) - weekOfYearStart) % configuration.WeeklyFrequency.Occurrence == 0)
                 {
                     return getNextTimeDaily(theDateAux,configuration);
                 }
@@ -196,30 +198,30 @@ namespace Scheduler
             if (configuration.Type == SchedulerType.Recurring && configuration.Frequency == FrequencyType.Monthly &&
                 configuration.MonthlyFrequency == null)
             {
-                throw new ConfigurationException("No monthly frequency was specified");
+                throw new ConfigurationException(textManager.GetText("NO_MONTHLY_FREQUENCY"));
             }
             if (configuration.MonthlyFrequency.IsDaily && configuration.MonthlyFrequency.DayNumber <= 0)
             {
-                throw new ConfigurationException("The specified day of execution is invalid");
+                throw new ConfigurationException(textManager.GetText("INVALID_DAY"));
             }
             if (configuration.MonthlyFrequency.Interval <= 0)
             {
-                throw new ConfigurationException("The specified monthly interval is invalid");
+                throw new ConfigurationException(textManager.GetText("INVALID_INTERVAL"));
             }
             if (configuration.MonthlyFrequency.IsDaily == false && configuration.MonthlyFrequency.Frequency.HasValue == false)
             {
-                throw new ConfigurationException("No frequency of execution was specified");
+                throw new ConfigurationException(textManager.GetText("NO_FREQUENCY"));
             }
             if (configuration.MonthlyFrequency.IsDaily == false && configuration.MonthlyFrequency.DayType.HasValue == false)
             {
-                throw new ConfigurationException("No day type was specified");
+                throw new ConfigurationException(textManager.GetText("NO_DAY_TYPE"));
             }
 
             if (theDate < configuration.StartDate)
             {
                 theDate = configuration.StartDate;
             }
-            DateTime? nextDate = configuration.MonthlyFrequency.GetExecutionDates(configuration.StartDate)
+            DateTime? nextDate = Calculator.GetMonthlyExecutionDates(configuration.StartDate, configuration.MonthlyFrequency)
                 .FirstOrDefault(T => T >= theDate.Date);
             if(nextDate.HasValue == false)
             {
@@ -241,27 +243,27 @@ namespace Scheduler
 
             if (nextExecution.HasValue == false)
             {
-                return string.Format(DATE_OVER_END, configuration.EndDate.Value.ToShortDateString());
+                return string.Format(textManager.GetText("DATE_OVER_END"), configuration.EndDate.Value.ToShortDateString());
             }
 
             if (configuration.Type == SchedulerType.Once)
             {
-                return string.Format(ONCE_OCCURRENCE, nextExecution.Value.ToShortDateString(), nextExecution.Value.ToShortTimeString());
+                return string.Format(textManager.GetText("ONCE_OCCURRENCE"), nextExecution.Value.ToShortDateString(), nextExecution.Value.ToShortTimeString());
             }
             else
             {
                 switch (configuration.Frequency)
                 {
                     case FrequencyType.Daily:
-                        return $"Occurs everyday {configuration.DailyFrequency.GetDescription()} starting on {configuration.StartDate.ToString("dd/MM/yyyy")}";
+                        return $"{textManager.GetText("OCCURS_EVERYDAY")} {Descriptor.GetDailyDescription(configuration.DailyFrequency, textManager)} {textManager.GetText("STARTING_ON")} {configuration.StartDate.ToString("dd/MM/yyyy")}";
                     case FrequencyType.Weekly:
-                        return configuration.WeeklyFrequency.GetDescription() + configuration.DailyFrequency.GetDescription() +
-                            $" starting on {configuration.StartDate.ToString("dd/MM/yyyy")}";
+                        return Descriptor.GetWeeklyDescription(configuration.WeeklyFrequency, textManager) + Descriptor.GetDailyDescription(configuration.DailyFrequency, textManager) +
+                            $" {textManager.GetText("STARTING_ON")} {configuration.StartDate.ToString("dd/MM/yyyy")}";
                     case FrequencyType.Monthly:
-                        return configuration.MonthlyFrequency.GetDescription() + configuration.DailyFrequency.GetDescription() +
-                            $" starting on {configuration.StartDate.ToString("dd/MM/yyyy")}";
+                        return Descriptor.GetMonthlyDescription(configuration.MonthlyFrequency, textManager) + Descriptor.GetDailyDescription(configuration.DailyFrequency, textManager) +
+                            $" {textManager.GetText("STARTING_ON")} {configuration.StartDate.ToString("dd/MM/yyyy")}";
                     default:
-                        throw new ScheduleException("No valid frequency was specified");
+                        throw new ScheduleException(textManager.GetText("NO_VALID_FREQUENCY"));
                 }
             }
         }
