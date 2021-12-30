@@ -5,10 +5,12 @@ namespace Scheduler
     public class TextManager
     {
         private Dictionary<string, string> translations;
+        private string culture;
 
         public TextManager(string culture)
         {
             translations = new Dictionary<string, string>();
+            this.culture = culture;
             switch (culture)
             {
                 case "EN-US":
@@ -21,8 +23,23 @@ namespace Scheduler
                     AddEsEsTexts();
                     break;
                 default:
-                    AddEnUsTexts();
+                    AddEnUkTexts();
                     break;
+            }
+        }
+
+        public string GetDatetimeFormat()
+        {
+            switch (culture)
+            {
+                case "EN-US":
+                    return "MM/dd/yyyy";
+                case "EN-UK":
+                    return "dd/MM/yyyy";
+                case "ES-ES":
+                    return "dd/MM/yyyy";
+                default:
+                    return "dd/MM/yyyy";
             }
         }
 
@@ -66,6 +83,7 @@ namespace Scheduler
             translations.Add("MONTH", "month");
             translations.Add("WEEKS", "weeks");
             translations.Add("WEEK", "week");
+            translations.Add("ADDITION", "and");
         }
 
         private void AddEnUkTexts()
@@ -99,6 +117,7 @@ namespace Scheduler
             translations.Add("MONTH", "month");
             translations.Add("WEEKS", "weeks");
             translations.Add("WEEK", "week");
+            translations.Add("ADDITION", "and");
         }
 
         private void AddEsEsTexts()
@@ -132,6 +151,7 @@ namespace Scheduler
             translations.Add("MONTH", "mes");
             translations.Add("WEEKS", "semanas");
             translations.Add("WEEK", "semana");
+            translations.Add("ADDITION", "y");
         }
     }
 }

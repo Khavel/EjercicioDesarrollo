@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Globalization;
+using System.Threading;
 
 namespace Scheduler
 {
@@ -18,6 +19,7 @@ namespace Scheduler
 
         public static string GetWeeklyDescription(WeeklyFrequency freq, TextManager textManager)
         {
+            CultureInfo culture = Thread.CurrentThread.CurrentCulture;
             string daysOfWeekStr = "";
             string description;
             for (int i = 0; i < freq.DaysOfWeek.Length; i++)
@@ -25,11 +27,11 @@ namespace Scheduler
                 if (i == freq.DaysOfWeek.Length - 1 && freq.DaysOfWeek.Length > 1)
                 {
                     daysOfWeekStr = daysOfWeekStr.Remove(daysOfWeekStr.Length - 2, 1);
-                    daysOfWeekStr += "and " + Enum.GetName(typeof(DayOfWeek), freq.DaysOfWeek[i]);
+                    daysOfWeekStr += textManager.GetText("ADDITION") + " " + culture.DateTimeFormat.GetDayName(freq.DaysOfWeek[i]);
                 }
                 else
                 {
-                    daysOfWeekStr += Enum.GetName(typeof(DayOfWeek), freq.DaysOfWeek[i]) + ", ";
+                    daysOfWeekStr += culture.DateTimeFormat.GetDayName(freq.DaysOfWeek[i]) + ", ";
                 }
             }
             if (freq.DaysOfWeek.Length == 1)

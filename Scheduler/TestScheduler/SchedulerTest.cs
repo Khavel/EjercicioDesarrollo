@@ -720,6 +720,74 @@ namespace TestScheduler
             Schedule.GetDescription(new DateTime(2020, 01, 01, 08, 21, 15), configuration).Should()
                 .Be("Occurs everyday every 1 hour between 04:00:00 and 08:00:00 starting on 08/01/2020");
         }
+
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Daily_NonRecurring_USLocale()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                IsRecurring = false,
+                Occurrence = new TimeSpan(21, 15, 15)
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+            configuration.Culture = "EN-US";
+
+
+            DateTime?[] executionTimes = Schedule.GetMultipleNextExecutionTimes(new DateTime(2020, 01, 08, 04, 0, 10), configuration, 6);
+
+            executionTimes[0].Should().Be(new DateTime(2020, 01, 08, 21, 15, 15));
+            executionTimes[1].Should().Be(new DateTime(2020, 01, 09, 21, 15, 15));
+            executionTimes[2].Should().Be(new DateTime(2020, 01, 10, 21, 15, 15));
+            executionTimes[3].Should().Be(new DateTime(2020, 01, 11, 21, 15, 15));
+            executionTimes[4].Should().Be(new DateTime(2020, 01, 12, 21, 15, 15));
+            executionTimes[5].Should().Be(new DateTime(2020, 01, 13, 21, 15, 15));
+            Schedule.GetDescription(executionTimes[5].Value, configuration).Should()
+                .Be("Occurs everyday once at 21:15:15 starting on 01/08/2020");
+        }
+
+        [Fact]
+        public void ScheduleNextExecution_Recurring_Daily_OverEndTime_USLocale()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(8, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(1, 0, 0)
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+            configuration.Culture = "EN-US";
+
+
+            DateTime?[] executionTimes = Schedule.GetMultipleNextExecutionTimes(new DateTime(2020, 01, 08, 06, 0, 0), configuration, 6);
+
+            executionTimes[0].Should().Be(new DateTime(2020, 01, 08, 7, 0, 0));
+            executionTimes[1].Should().Be(new DateTime(2020, 01, 08, 8, 0, 0));
+            executionTimes[2].Should().Be(new DateTime(2020, 01, 09, 4, 0, 0));
+            executionTimes[3].Should().Be(new DateTime(2020, 01, 09, 5, 0, 0));
+            executionTimes[4].Should().Be(new DateTime(2020, 01, 09, 6, 0, 0));
+            executionTimes[5].Should().Be(new DateTime(2020, 01, 09, 7, 0, 0));
+
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 08, 04, 0, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 5, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 08, 04, 40, 0), configuration).Should().Be(new DateTime(2020, 01, 08, 5, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 31, 12, 10, 0), configuration).Should().Be(new DateTime(2020, 02, 01, 4, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 20, 14, 55, 0), configuration).Should().Be(new DateTime(2020, 01, 21, 4, 0, 0));
+            Schedule.GetNextExecutionTime(new DateTime(2020, 01, 20, 08, 0, 01), configuration).Should().Be(new DateTime(2020, 01, 21, 4, 0, 0));
+            Schedule.GetDescription(new DateTime(2020, 01, 01, 08, 21, 15), configuration).Should()
+                .Be("Occurs everyday every 1 hour between 04:00:00 and 08:00:00 starting on 01/08/2020");
+        }
         #endregion
         #region Weekly
         [Fact]
@@ -3366,13 +3434,78 @@ namespace TestScheduler
             configuration.StartDate = startDate;
             configuration.DailyFrequency = dailyFreq;
             configuration.WeeklyFrequency = weeklyFreq;
-            configuration.Culture = "ES_ES";
+            configuration.Culture = "ES-ES";
+
+
+            Schedule.GetDescription(new DateTime(2020, 03, 01, 08, 21, 15), configuration).Should()
+                .Be("Ocurre cada 3 semanas el lunes, martes, miércoles, viernes, sábado y domingo cada 50 minutos entre las 04:00:00 y las 06:00:00 empezando el 08/01/2020");
+        }
+
+        [Fact]
+        public void Schedule_Description_Recurring_Weekly_EverydayThreeWeeks_EnglishUK()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(6, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(0, 50, 0)
+            };
+
+            WeeklyFrequency weeklyFreq = new WeeklyFrequency()
+            {
+                DaysOfWeek = new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Wednesday,
+                        DayOfWeek.Tuesday,DayOfWeek.Friday,DayOfWeek.Saturday,DayOfWeek.Sunday },
+                Occurrence = 3
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Frequency = FrequencyType.Weekly;
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+            configuration.WeeklyFrequency = weeklyFreq;
+            configuration.Culture = "EN-UK";
 
 
             Schedule.GetDescription(new DateTime(2020, 03, 01, 08, 21, 15), configuration).Should()
                 .Be("Occurs every 3 weeks on monday, tuesday, wednesday, friday, saturday and sunday every 50 minutes between 04:00:00 and 06:00:00 starting on 08/01/2020");
         }
 
+        [Fact]
+        public void Schedule_Description_Recurring_Weekly_EverydayThreeWeeks_EnglishUS()
+        {
+            DateTime startDate = new DateTime(2020, 01, 08);
+            DailyFrequency dailyFreq = new DailyFrequency()
+            {
+                StartTime = new TimeSpan(4, 0, 0),
+                EndTime = new TimeSpan(6, 0, 0),
+                IsRecurring = true,
+                Occurrence = new TimeSpan(0, 50, 0)
+            };
+
+            WeeklyFrequency weeklyFreq = new WeeklyFrequency()
+            {
+                DaysOfWeek = new DayOfWeek[] { DayOfWeek.Monday, DayOfWeek.Wednesday,
+                        DayOfWeek.Tuesday,DayOfWeek.Friday,DayOfWeek.Saturday,DayOfWeek.Sunday },
+                Occurrence = 3
+            };
+
+
+            SchedulerConfiguration configuration = new SchedulerConfiguration();
+            configuration.Frequency = FrequencyType.Weekly;
+            configuration.Type = SchedulerType.Recurring;
+            configuration.StartDate = startDate;
+            configuration.DailyFrequency = dailyFreq;
+            configuration.WeeklyFrequency = weeklyFreq;
+            configuration.Culture = "EN-US";
+
+
+            Schedule.GetDescription(new DateTime(2020, 03, 01, 08, 21, 15), configuration).Should()
+                .Be("Occurs every 3 weeks on monday, tuesday, wednesday, friday, saturday and sunday every 50 minutes between 04:00:00 and 06:00:00 starting on 01/08/2020");
+        }
         #endregion
     }
 }

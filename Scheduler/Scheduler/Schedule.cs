@@ -9,7 +9,7 @@ namespace Scheduler
         private static TextManager textManager;
         public static DateTime? GetNextExecutionTime(DateTime currentDate, SchedulerConfiguration configuration)
         {
-            string culture = string.IsNullOrEmpty(configuration.Culture) ? "EN-US" : configuration.Culture;
+            string culture = string.IsNullOrEmpty(configuration.Culture) ? "EN-UK" : configuration.Culture;
             textManager = new TextManager(culture);
             Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);
             if (configuration.Type == SchedulerType.Once)
@@ -243,25 +243,25 @@ namespace Scheduler
 
             if (nextExecution.HasValue == false)
             {
-                return string.Format(textManager.GetText("DATE_OVER_END"), configuration.EndDate.Value.ToShortDateString());
+                return string.Format(textManager.GetText("DATE_OVER_END"), configuration.EndDate.Value.ToString(textManager.GetDatetimeFormat()));
             }
 
             if (configuration.Type == SchedulerType.Once)
             {
-                return string.Format(textManager.GetText("ONCE_OCCURRENCE"), nextExecution.Value.ToShortDateString(), nextExecution.Value.ToShortTimeString());
+                return string.Format(textManager.GetText("ONCE_OCCURRENCE"), nextExecution.Value.ToString(textManager.GetDatetimeFormat()), nextExecution.Value.ToString("H:mm"));
             }
             else
             {
                 switch (configuration.Frequency)
                 {
                     case FrequencyType.Daily:
-                        return $"{textManager.GetText("OCCURS_EVERYDAY")} {Descriptor.GetDailyDescription(configuration.DailyFrequency, textManager)} {textManager.GetText("STARTING_ON")} {configuration.StartDate.ToString("dd/MM/yyyy")}";
+                        return $"{textManager.GetText("OCCURS_EVERYDAY")} {Descriptor.GetDailyDescription(configuration.DailyFrequency, textManager)} {textManager.GetText("STARTING_ON")} {configuration.StartDate.ToString(textManager.GetDatetimeFormat())}";
                     case FrequencyType.Weekly:
                         return Descriptor.GetWeeklyDescription(configuration.WeeklyFrequency, textManager) + Descriptor.GetDailyDescription(configuration.DailyFrequency, textManager) +
-                            $" {textManager.GetText("STARTING_ON")} {configuration.StartDate.ToString("dd/MM/yyyy")}";
+                            $" {textManager.GetText("STARTING_ON")} {configuration.StartDate.ToString(textManager.GetDatetimeFormat())}";
                     case FrequencyType.Monthly:
                         return Descriptor.GetMonthlyDescription(configuration.MonthlyFrequency, textManager) + Descriptor.GetDailyDescription(configuration.DailyFrequency, textManager) +
-                            $" {textManager.GetText("STARTING_ON")} {configuration.StartDate.ToString("dd/MM/yyyy")}";
+                            $" {textManager.GetText("STARTING_ON")} {configuration.StartDate.ToString(textManager.GetDatetimeFormat())}";
                     default:
                         throw new ScheduleException(textManager.GetText("NO_VALID_FREQUENCY"));
                 }
